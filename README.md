@@ -19,7 +19,7 @@ The objective is not simply to install cybersecurity tools. Each phase examines 
 * [x] Install Proxmox
 * [x] Create the Project Aegis repository
 * [x] Create the initial repository structure
-* [ ] Document the Proxmox host
+* [x] Document the Proxmox host
 * [ ] Configure lab storage
 * [ ] Document virtual networking
 * [ ] Deploy Kali Linux
