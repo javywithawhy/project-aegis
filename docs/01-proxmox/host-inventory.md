@@ -140,6 +140,23 @@ The secondary HDD should be mounted and added to Proxmox before it is used for b
 | `local-lvm` | LVM-Thin | Thin pool `data` in volume group `pve` | VM disk images and container root filesystems | Approximately 141.2 GiB | Active |
 | Secondary HDD | Not yet configured | `/dev/sda2` | Planned for ISO files, backups, archives, and exports | Approximately 931 GiB | Formatted but not mounted |
 
+## Secondary HDD Configuration
+
+The Toshiba 1 TB HDD was inspected using a temporary read-only mount before being configured for permanent use.
+
+| Field | Value |
+|---|---|
+| Proxmox storage ID | `aegis-hdd` |
+| Device | `/dev/sda2` |
+| Filesystem | ext4 |
+| Mount point | `/mnt/pve/aegis-hdd` |
+| Approximate capacity | 931 GB |
+| Primary purpose | Backups, ISO images, container templates, snippets, archives |
+| VM disks enabled | No |
+| Shared storage | No |
+
+The drive is mounted automatically using its filesystem UUID through `/etc/fstab`. The `nofail` option is used so that the Proxmox host can still boot if the secondary disk is unavailable.
+
 ### Current Usage
 
 | Storage | Used | Available | Utilization |
