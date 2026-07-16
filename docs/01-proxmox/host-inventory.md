@@ -134,20 +134,49 @@ The secondary HDD should be mounted and added to Proxmox before it is used for b
 
 ## Proxmox Storage Configuration
 
-| Storage name | Type | Location or device | Content types | Status |
-|---|---|---|---|---|
-| `local` | Directory storage | Located on the `pve-root` filesystem, normally `/var/lib/vz` | ISO images, container templates, backups, and snippets | To be confirmed |
-| `local-lvm` | LVM-Thin | `pve/data` thin pool on `/dev/nvme0n1p3` | VM and container disk images | Active |
-| Secondary HDD | Not yet configured | `/dev/sda2` | Planned for ISOs, backups, archives, and exports | Not mounted or added to Proxmox |
+| Storage name | Storage type | Backing location | Allowed content | Total capacity | Current status |
+|---|---|---|---|---:|---|
+| `local` | Directory | `/var/lib/vz` on `pve-root` | ISO images, container templates, backups, and imports | Approximately 67.7 GiB | Active |
+| `local-lvm` | LVM-Thin | Thin pool `data` in volume group `pve` | VM disk images and container root filesystems | Approximately 141.2 GiB | Active |
+| Secondary HDD | Not yet configured | `/dev/sda2` | Planned for ISO files, backups, archives, and exports | Approximately 931 GiB | Formatted but not mounted |
+
+### Current Usage
+
+| Storage | Used | Available | Utilization |
+|---|---:|---:|---:|
+| `local` | Approximately 4.6 GiB | Approximately 59.6 GiB | 6.86% |
+| `local-lvm` | 0 GiB | Approximately 141.2 GiB | 0% |
+
+## Secondary HDD Filesystem
+
+| Field | Value |
+|---|---|
+| Device | `/dev/sda2` |
+| Filesystem | ext4 |
+| Capacity | Approximately 931 GB |
+| UUID | `0e381b73-6bbd-486e-9da5-007d424b7555` |
+| Current mount point | None |
+| Listed in `/etc/fstab` | No |
+| Configured in Proxmox | No |
+
+The secondary HDD already contains an ext4 filesystem. It has not been reformatted or modified during Project Aegis.
+
+Before it is permanently mounted or added to Proxmox, its existing contents will be inspected using a temporary read-only mount.
 
 ### Storage Observations
 
 - Proxmox is installed on the 238.5 GB Kingston NVMe SSD.
-- The Proxmox root logical volume provides 69.4 GB for the host operating system.
-- The `pve-data` thin pool provides approximately 141.2 GB for virtual-machine and container disks.
-- The system has an 8 GB swap logical volume.
-- The 931 GB Toshiba HDD contains an ext4 partition but currently has no visible mount point.
-- The secondary HDD must be mounted and added as a Proxmox storage resource before it can store ISO images, backups, or other Proxmox-managed content.
+- The Proxmox root logical volume provides approximately 68 GB for the host operating system.
+- The `local` storage resource is located at `/var/lib/vz`.
+- The `local` resource permits ISO images, container templates, backups, and imports.
+- The `local-lvm` resource uses the `pve/data` LVM thin pool.
+- The `local-lvm` resource provides approximately 141.2 GiB for VM and container disks.
+- `local-lvm` currently shows 0% utilization.
+- The 1 TB Toshiba HDD contains an ext4 filesystem on `/dev/sda2`.
+- `/dev/sda2` is not currently mounted.
+- `/dev/sda2` is not listed in `/etc/fstab`.
+- `/dev/sda2` is not currently managed by Proxmox.
+- The secondary HDD must be inspected before it is permanently mounted or assigned a Proxmox storage role.
 
 ---
 
@@ -308,9 +337,9 @@ The following checks were completed:
 
 Store sanitized screenshots in:
 
-```text
+
 screenshots/proxmox/
-```
+
 
 Recommended screenshots:
 
@@ -322,11 +351,11 @@ Recommended screenshots:
 
 Use descriptive filenames:
 
-```text
+
 proxmox-node-summary.png
 proxmox-storage-overview.png
 proxmox-network-overview.png
-```
+
 
 Review every screenshot before committing it to ensure it does not expose information you do not want public.
 
