@@ -366,20 +366,20 @@ The hardening phase will include:
 
 ## Validation Checklist
 
-- [ ] Raspberry Pi OS Lite 64-bit was selected
-- [ ] The 64 GB microSD card was imaged successfully
-- [ ] Hostname was configured as `security-pi`
-- [ ] Administrative user was configured as `javier`
-- [ ] SSH was enabled
-- [ ] Wired Ethernet was connected
-- [ ] The Raspberry Pi booted successfully
-- [ ] The Raspberry Pi received an IP address
-- [ ] SSH access was successful
-- [ ] Operating system information was verified
-- [ ] Storage capacity was verified
-- [ ] Memory information was verified
-- [ ] Screenshots or command output were saved
-- [ ] No credentials were committed to GitHub
+- [X] Raspberry Pi OS Lite 64-bit was selected
+- [X] The 64 GB microSD card was imaged successfully
+- [X] Hostname was configured as `security-pi`
+- [X] Administrative user was configured as `javier`
+- [X] SSH was enabled
+- [X] Wired Ethernet was connected
+- [X] The Raspberry Pi booted successfully
+- [X] The Raspberry Pi received an IP address
+- [X] SSH access was successful
+- [X] Operating system information was verified
+- [X] Storage capacity was verified
+- [X] Memory information was verified
+- [X] Screenshots or command output were saved
+- [X] No credentials were committed to GitHub
 
 ---
 
@@ -410,7 +410,7 @@ Examples:
 ## Current Status
 
 ```text
-Installation pending
+Installation complete
 ```
 
 Update this section after completing the installation.
