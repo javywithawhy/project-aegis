@@ -5,8 +5,8 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.8 |
-| Status | In Progress |
+| Version | 0.9 |
+| Status | Ready for Owner Review |
 | Date | 2026-07-26 |
 | Authorization Status | Not Authorized — System Definition in Progress |
 
@@ -39,9 +39,9 @@ The public inventory must not contain passwords, tokens, private keys, public IP
 
 | Asset ID | Category | Asset Name | Description and Role | Location or Host | Network Association | Operational Status | Validation Status |
 |---|---|---|---|---|---|---|---|
-| `PASL-HW-001` | Physical host | Proxmox virtualization host | ASUS TUF Gaming Laptop FX504 used as the bare-metal platform for Project Aegis virtual machines, virtual networking, and storage services | Privately controlled physical location | Management through `vmbr0` | Operational | Validated — hostname, operating platform, processor, memory, disks, and network controllers confirmed on 2026-07-26 |
-| `PASL-STO-001` | Primary storage | Kingston RBUSNS8154P3256GJ NVMe SSD | Hosts Proxmox system files, LVM storage, and active VM disks | `/dev/nvme0n1` in `PASL-HW-001` | Not directly networked | Operational | Validated — 238.5 GiB NVMe device confirmed on 2026-07-26 |
-| `PASL-STO-002` | Secondary storage | Toshiba MQ04ABF100 / `aegis-hdd` | Directory storage for ISO files, backups, templates, archives, and supporting project data | `/dev/sda2` mounted at `/mnt/pve/aegis-hdd` | Available through Proxmox storage services | Operational | Validated — 931.5 GiB SATA device and active Proxmox storage confirmed |
+| `PASL-HW-001` | Physical host | Proxmox virtualization host | ASUS TUF Gaming Laptop FX504 used as the bare-metal platform for Project Aegis virtual machines, virtual networking, and storage services | Privately controlled physical location | Management through `vmbr0` | Operational | Validated — hostname, operating platform, processor, memory, disks, network controllers, and host services confirmed on 2026-07-26 |
+| `PASL-STO-001` | Primary storage | Kingston RBUSNS8154P3256GJ NVMe SSD | Hosts Proxmox system files, LVM storage, and active VM disks | `/dev/nvme0n1` in `PASL-HW-001` | Not directly networked | Operational | Validated — 238.5 GiB NVMe device, root and swap volumes, LVM thin pool, and VM ID `100` disk confirmed on 2026-07-26 |
+| `PASL-STO-002` | Secondary storage | Toshiba MQ04ABF100 / `aegis-hdd` | Directory storage for ISO files, backups, snippets, and container templates | `/dev/sda2` mounted at `/mnt/pve/aegis-hdd` | Available through Proxmox storage services | Operational | Validated — 931.5 GiB SATA device, read/write ext4 mount, sanitized persistent `/etc/fstab` entry, and active Proxmox storage confirmed on 2026-07-26 |
 | `PASL-NET-001` | Physical network interface | `nic0` | Physical Realtek Gigabit Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001`; driver `r8169` | Member of `vmbr0`; connected to the trusted home network | Operational | Validated — interface up, forwarding through `vmbr0`, and mapped to the Realtek wired controller on 2026-07-26 |
 | `PASL-NET-002` | Virtual network bridge | `vmbr0` | Linux bridge providing current Proxmox management, default-route, and VM connectivity | Configured on `PASL-HW-001` | Home-network bridged connection | Operational | Validated — bridge up, `nic0` attached, and default route present on 2026-07-26 |
 | `PASL-VM-001` | Virtual machine | `aegis-lab-kali-01` | Kali Linux security administration and authorized testing workstation | Proxmox VM ID `100` on `PASL-HW-001` | VirtIO adapter on `vmbr0`; DHCP; Proxmox firewall enabled | Operational | Validated — CPU, memory, disk, network, guest agent, boot media, snapshot, operating system, services, and listener state confirmed on 2026-07-26 |
@@ -73,6 +73,18 @@ The public inventory must not contain passwords, tokens, private keys, public IP
 | Configured swap | 8 GiB |
 
 Point-in-time memory utilization is retained in the supporting evidence but is not treated as a fixed asset characteristic.
+
+### 5.1 Validated Storage Configuration
+
+| Storage ID | Backing Resource | Type | Status | Total (KiB) | Used (KiB) | Available (KiB) | Utilization |
+|---|---|---|---|---:|---:|---:|---:|
+| `local` | `pve-root` / `/var/lib/vz` | Directory | Active | 71,017,632 | 5,173,128 | 62,191,284 | 7.28% |
+| `local-lvm` | `pve-data` thin pool | LVM thin | Active | 148,086,784 | 22,494,382 | 125,592,401 | 15.19% |
+| `aegis-hdd` | `/dev/sda2` at `/mnt/pve/aegis-hdd` | Directory | Active | 959,786,032 | 11,098,948 | 899,858,876 | 1.16% |
+
+`aegis-hdd` is mounted read/write as ext4 and persists through a sanitized `/etc/fstab` entry using `defaults,nofail`. Its Proxmox configuration permits `backup`, `snippets`, `iso`, and `vztmpl` content and marks the storage as non-shared. The public repository does not retain the filesystem UUID.
+
+The reconciled [`Proxmox Host Inventory`](../01-proxmox/host-inventory.md) replaces earlier stale statements that the secondary HDD was unmounted or unmanaged.
 
 ## 6. Validated Network Configuration
 
@@ -240,7 +252,7 @@ Update this inventory when:
 - A vulnerability, incident, or configuration review identifies an undocumented asset.
 - The authorization boundary or inventory standard changes.
 
-## 14. Current Validation Tasks
+## 14. Validation and Approval Status
 
 - [x] Validate the current Proxmox hostname, version, kernel, processor, and memory.
 - [x] Validate physical disk models, capacities, and device assignments without publishing serial numbers.
@@ -250,8 +262,8 @@ Update this inventory when:
 - [x] Classify Proxmox listener bind scopes without publishing local IP addresses.
 - [x] Validate active managed software and listening services inside the Kali VM.
 - [x] Reconcile the unused `nic1` entry with runtime interfaces and physical network controllers.
-- [ ] Reconcile stale legacy host-inventory statements with the validated active configuration.
-- [ ] Review and approve the active asset list.
+- [x] Reconcile stale legacy host-inventory statements with the validated active configuration.
+- [ ] Owner review and approval of the active asset list.
 
 ## 15. Related Documentation
 
@@ -267,6 +279,7 @@ Update this inventory when:
 - [`Proxmox Host Service Validation`](evidence/proxmox-host-service-validation.md)
 - [`Kali Service Validation`](evidence/kali-service-validation.md)
 - [`Proxmox Network Controller Reconciliation`](evidence/proxmox-network-controller-reconciliation.md)
+- [`Proxmox Storage Validation`](evidence/proxmox-storage-validation.md)
 
 ## 16. Revision History
 
@@ -280,3 +293,4 @@ Update this inventory when:
 | 0.6 | 2026-07-26 | Javier Delgado | Classified Proxmox listener bind scopes and identified wildcard administrative and RPC attack-surface items | In Progress |
 | 0.7 | 2026-07-26 | Javier Delgado | Validated Kali system identity, security-relevant service state, selected package versions, and the absence of listening TCP or UDP services | In Progress |
 | 0.8 | 2026-07-26 | Javier Delgado | Reconciled persistent network configuration with runtime interfaces and hardware controllers; classified `nic1` as a stale or unused entry | In Progress |
+| 0.9 | 2026-07-26 | Javier Delgado | Validated Proxmox storage utilization, reconciled the secondary HDD mount and Proxmox configuration, and replaced contradictory legacy host-inventory statements | Ready for Owner Review |
