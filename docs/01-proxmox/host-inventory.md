@@ -1,388 +1,256 @@
 # Proxmox Host Inventory
 
-## Purpose
+| Field | Value |
+|---|---|
+| Project | Project Aegis Security Lab |
+| System Identifier | PASL |
+| Document Owner | Javier Delgado |
+| Version | 1.0 |
+| Status | Current — Validated |
+| Validation Date | 2026-07-26 |
 
-This document records the physical hardware, Proxmox installation, storage configuration, and network configuration used to host Project Aegis.
+## 1. Purpose
 
-The inventory provides a baseline for capacity planning, troubleshooting, change tracking, and future architecture decisions.
+This document records the validated physical hardware, Proxmox platform, storage, network, and administrative-service configuration used to host Project Aegis.
 
----
+It provides a current baseline for system understanding, capacity planning, configuration management, troubleshooting, security assessment, change control, and continuous monitoring.
 
-## Host Summary
+Sensitive identifiers such as hardware serial numbers, MAC addresses, filesystem UUIDs, credentials, and exact management addresses are excluded from this public document.
 
-| Field               | Value                        |
-| ------------------- | ---------------------------- |
-| Project             | Project Aegis                |
-| Host role           | Proxmox virtualization host  |
-| Hardware platform   | ASUS TUF Gaming Laptop FX504 |
-| Proxmox node name   | proxmox                      |
-| Proxmox VE version  | 9.1.0                        |
-| Operating system    | Debian GNU/Linux 13 (trixie) |
-| Kernel version      | Linux 6.17.2-1-pve           |
-| System architecture | x86-64                       |
-| Installation type   | Bare-metal hypervisor        |
-| Primary use         | Cybersecurity homelab        |
+## 2. Host Summary
 
----
+| Field | Current Value |
+|---|---|
+| Asset ID | `PASL-HW-001` |
+| Host role | Proxmox virtualization host |
+| Hardware platform | ASUS TUF Gaming Laptop FX504 |
+| Proxmox node name | `proxmox` |
+| Proxmox VE version | 9.1.1 |
+| Proxmox package identifier | `pve-manager/9.1.1/42db4a6cf33dac83` |
+| Operating system | Debian GNU/Linux 13 (trixie) |
+| Running kernel | `6.17.2-1-pve` |
+| System architecture | x86-64 |
+| Installation type | Bare-metal hypervisor |
+| Primary use | Cybersecurity and ISSO/RMF homelab |
 
-## Processor
+## 3. Processor and Memory
 
-| Field                  | Value                                                  |
-| ---------------------- | ------------------------------------------------------ |
-| Manufacturer           | Intel                                                  |
-| Model                  | Intel Core i7-8750H @ 2.20GHz                          |
-| Physical cores         | 6                                                      |
-| Threads per core       | 2                                                      |
-| Logical processors     | 12                                                     |
-| Virtualization support | Intel VT-x                                             |
-| VM workload strategy   | Multiple small VMs with limited simultaneous operation |
+### 3.1 Processor
 
-### Capacity Notes
+| Field | Current Value |
+|---|---|
+| Manufacturer | Intel |
+| Model | Intel Core i7-8750H CPU @ 2.20 GHz |
+| CPU sockets | 1 |
+| Physical cores | 6 |
+| Threads per core | 2 |
+| Logical processors | 12 |
+| Virtualization strategy | Multiple small VMs with controlled simultaneous operation |
 
-The processor provides sufficient capacity for several small virtual machines. Virtual CPUs may be overcommitted because each VM does not continuously use all assigned processor time.
+### 3.2 Memory
 
-CPU utilization will be monitored when multiple systems are operating simultaneously.
+| Field | Current Value |
+|---|---|
+| Installed memory | 16 GB nominal |
+| Operating-system-reported memory | 15 GiB |
+| Configured swap | 8 GiB |
+| Primary capacity constraint | Available memory |
 
----
+The difference between nominal installed memory and operating-system-reported memory is expected due to binary reporting and hardware reservations.
 
-## Memory
+Only systems required for the active exercise should remain powered on. Planned Windows, monitoring, vulnerability-management, and routing workloads cannot all operate simultaneously with the current memory capacity.
 
-| Field                 | Value                              |
-| --------------------- | ---------------------------------- |
-| Installed memory      | Approximately 16 GB DDR4           |
-| Proxmox host reserve  | Approximately 2–4 GB               |
-| Estimated VM capacity | Approximately 10–12 GB at one time |
-| Primary constraint    | Available memory                   |
+## 4. Physical Storage
 
-### Memory Strategy
+| Asset ID | Device | Model | Capacity | Media | Current Role | Status |
+|---|---|---|---:|---|---|---|
+| `PASL-STO-001` | `/dev/nvme0n1` | Kingston RBUSNS8154P3256GJ | 238.5 GiB | NVMe SSD | Proxmox system disk, root filesystem, swap, and LVM thin storage | Operational |
+| `PASL-STO-002` | `/dev/sda` | Toshiba MQ04ABF100 | 931.5 GiB | SATA HDD | Secondary Proxmox directory storage through `aegis-hdd` | Operational |
 
-Memory is the primary resource constraint for this lab.
+Hardware serial numbers are intentionally omitted.
 
-Only systems required for the active lab exercise should remain powered on. Large services such as Wazuh, Windows Server, and Greenbone may require other virtual machines to be shut down temporarily.
+## 5. Primary NVMe Layout
 
-Initial planned allocations include:
+| Device or Volume | Size | Type or Filesystem | Mount Point or Role |
+|---|---:|---|---|
+| `/dev/nvme0n1` | 238.5 GiB | Physical NVMe disk | Primary Proxmox system disk |
+| `/dev/nvme0n1p1` | 1007 KiB | Reserved partition | System-reserved space |
+| `/dev/nvme0n1p2` | 1 GiB | VFAT | `/boot/efi` |
+| `/dev/nvme0n1p3` | 237.5 GiB | LVM2 member | Proxmox LVM physical volume |
+| `pve-swap` | 8 GiB | Swap logical volume | System swap |
+| `pve-root` | 69.4 GiB | ext4 logical volume | Root filesystem `/` |
+| `pve-data` | 141.2 GiB | LVM thin pool | Backing storage for `local-lvm` |
+| `pve-vm--100--disk--0` | 40 GiB | Thin logical volume | Kali VM ID `100` primary disk |
 
-| Virtual machine     | Planned RAM |
-| ------------------- | ----------: |
-| Kali Linux          |        4 GB |
-| Ubuntu Server       |        2 GB |
-| Windows workstation |        4 GB |
-| Windows Server      |        4 GB |
-| Wazuh               |      4–6 GB |
-| pfSense             |      1–2 GB |
+## 6. Secondary HDD Layout and Mount
 
-These systems will not all operate simultaneously with the current memory capacity.
+| Device or Partition | Size | Filesystem | Mount Point or Role |
+|---|---:|---|---|
+| `/dev/sda` | 931.5 GiB | Physical SATA disk | Secondary Toshiba HDD |
+| `/dev/sda1` | 512 MiB | VFAT | No active mount observed |
+| `/dev/sda2` | 931 GiB | ext4 | `/mnt/pve/aegis-hdd` |
 
----
+`/dev/sda2` is mounted read/write:
 
-## Physical Storage
+```text
+/mnt/pve/aegis-hdd /dev/sda2 ext4 rw,relatime
+```
 
-| Device | Model | Approximate capacity | Media type | Current role | Planned purpose |
-|---|---|---:|---|---|---|
-| `/dev/nvme0n1` | Kingston RBUSNS8154P3256GJ | 238.5 GB | PCIe NVMe SSD | Proxmox system drive and LVM storage | Proxmox, active virtual machines, and performance-sensitive workloads |
-| `/dev/sda` | Toshiba MQ04ABF100 | 931.5 GB | SATA HDD | Secondary disk; ext4 partition exists but is not currently mounted | ISO files, backups, archived VMs, scan exports, and less performance-sensitive data |
+The persistent mount is configured in `/etc/fstab` using a redacted filesystem UUID:
 
-## Physical Disk Layout
+```text
+UUID=[REDACTED] /mnt/pve/aegis-hdd ext4 defaults,nofail 0 2
+```
 
-### Primary NVMe SSD
+The `nofail` option allows the Proxmox host to continue booting if the secondary disk is unavailable.
 
-The primary NVMe drive is configured with the standard Proxmox LVM layout.
+## 7. Proxmox Storage Resources
 
-| Device or volume | Size | Type | Filesystem | Mount point or purpose |
-|---|---:|---|---|---|
-| `/dev/nvme0n1` | 238.5 GB | Physical disk | — | Primary Proxmox system disk |
-| `/dev/nvme0n1p1` | 1007 KB | Partition | — | Reserved system partition |
-| `/dev/nvme0n1p2` | 1 GB | Partition | VFAT | `/boot/efi` |
-| `/dev/nvme0n1p3` | 237.5 GB | Partition | LVM2 member | Proxmox LVM physical volume |
-| `pve-swap` | 8 GB | Logical volume | Swap | System swap space |
-| `pve-root` | 69.4 GB | Logical volume | ext4 | Proxmox root filesystem `/` |
-| `pve-data` | 141.2 GB | LVM thin pool | LVM thin | Virtual-machine and container disk storage |
+| Storage ID | Type | Status | Total (KiB) | Used (KiB) | Available (KiB) | Utilization |
+|---|---|---|---:|---:|---:|---:|
+| `aegis-hdd` | Directory | Active | 959,786,032 | 11,098,948 | 899,858,876 | 1.16% |
+| `local` | Directory | Active | 71,017,632 | 5,173,128 | 62,191,284 | 7.28% |
+| `local-lvm` | LVM thin | Active | 148,086,784 | 22,494,382 | 125,592,401 | 15.19% |
 
-### Secondary HDD
+### 7.1 `aegis-hdd` Configuration
 
-| Device or partition | Size | Type | Filesystem | Mount point or purpose |
-|---|---:|---|---|---|
-| `/dev/sda` | 931.5 GB | Physical disk | — | Secondary Toshiba HDD |
-| `/dev/sda1` | 512 MB | Partition | VFAT | Currently no mount point shown |
-| `/dev/sda2` | 931 GB | Partition | ext4 | Currently no mount point shown |
+```text
+dir: aegis-hdd
+        path /mnt/pve/aegis-hdd
+        content backup,snippets,iso,vztmpl
+        prune-backups keep-all=1
+        shared 0
+```
 
-The secondary HDD contains an ext4 partition, but the `lsblk` output does not show a mount point. This indicates that the disk is formatted but is not currently mounted in the Proxmox filesystem or configured as a Proxmox storage resource.
+`aegis-hdd` is a non-shared directory-storage resource supporting:
 
-## Storage Strategy
-
-The Kingston NVMe SSD currently hosts the Proxmox operating system and the LVM thin pool used for virtual-machine disks.
-
-The NVMe SSD should host workloads that benefit from faster storage performance, including:
-
-- Proxmox system files
-- Windows virtual machines
-- Kali Linux
-- Wazuh
-- Frequently used Ubuntu servers
-- Active Directory services
-
-The Toshiba HDD will be configured as secondary storage for:
-
-- Installation ISO images
 - VM and container backups
-- Archived virtual machines
-- Greenbone and Nmap report exports
-- Project files
-- Less performance-sensitive workloads
+- ISO images
+- Container templates
+- Proxmox snippets
 
-The secondary HDD should be mounted and added to Proxmox before it is used for backups or ISO storage.
+It is not currently configured to host VM disk images.
 
-## Proxmox Storage Configuration
+### 7.2 Storage Reconciliation
 
-| Storage name | Storage type | Backing location | Allowed content | Total capacity | Current status |
-|---|---|---|---|---:|---|
-| `local` | Directory | `/var/lib/vz` on `pve-root` | ISO images, container templates, backups, and imports | Approximately 67.7 GiB | Active |
-| `local-lvm` | LVM-Thin | Thin pool `data` in volume group `pve` | VM disk images and container root filesystems | Approximately 141.2 GiB | Active |
-| Secondary HDD | Not yet configured | `/dev/sda2` | Planned for ISO files, backups, archives, and exports | Approximately 931 GiB | Formatted but not mounted |
+Previous statements that `/dev/sda2` was unmounted, absent from `/etc/fstab`, and unmanaged by Proxmox were stale. Validation confirmed that the partition is mounted persistently and is active as `aegis-hdd`.
 
-## Secondary HDD Configuration
+The filesystem UUID previously included in the legacy inventory has been removed from the public record.
 
-The Toshiba 1 TB HDD was inspected using a temporary read-only mount before being configured for permanent use.
+## 8. Network Interfaces
 
-| Field | Value |
-|---|---|
-| Proxmox storage ID | `aegis-hdd` |
-| Device | `/dev/sda2` |
-| Filesystem | ext4 |
-| Mount point | `/mnt/pve/aegis-hdd` |
-| Approximate capacity | 931 GB |
-| Primary purpose | Backups, ISO images, container templates, snippets, archives |
-| VM disks enabled | No |
-| Shared storage | No |
+| Asset ID | Interface | Type | Runtime State | Purpose | Inventory Treatment |
+|---|---|---|---|---|---|
+| `PASL-NET-001` | `nic0` | Realtek wired Ethernet using `r8169` | Up | Physical connection for Proxmox management and bridged VM traffic | Active managed asset |
+| `PASL-NET-002` | `vmbr0` | Linux bridge | Up | Proxmox management, default route, and current VM connectivity | Active managed asset |
+| — | `wlo1` | Intel Wireless-AC 9560 using `iwlwifi` | Down | Not used by Project Aegis | Excluded from active inventory |
+| — | `nic1` | Persistent configuration entry only | No runtime interface exists | No validated purpose | Stale or unused configuration entry |
+| — | `lo` | Loopback | Active locally | Local host communication | System-managed interface |
 
-The drive is mounted automatically using its filesystem UUID through `/etc/fstab`. The `nofail` option is used so that the Proxmox host can still boot if the secondary disk is unavailable.
+`nic0` is attached to `vmbr0`. The Proxmox management address is statically configured on `vmbr0`, and the default route uses `vmbr0`. Exact addresses are withheld from the public inventory.
 
-### Current Usage
+The persistent line `iface nic1 inet manual` does not correspond to a runtime interface or a second wired controller. It is excluded from the active asset inventory. No network configuration was changed during this validation.
 
-| Storage | Used | Available | Utilization |
-|---|---:|---:|---:|
-| `local` | Approximately 4.6 GiB | Approximately 59.6 GiB | 6.86% |
-| `local-lvm` | 0 GiB | Approximately 141.2 GiB | 0% |
+## 9. Current Network Path
 
-## Secondary HDD Filesystem
+```text
+External Home Router
+        |
+Trusted Home Network
+        |
+Realtek Ethernet — nic0
+        |
+Linux Bridge — vmbr0
+        |---------------------------|
+Proxmox Management          VM ID 100 Kali
+```
 
-| Field | Value |
-|---|---|
-| Device | `/dev/sda2` |
-| Filesystem | ext4 |
-| Capacity | Approximately 931 GB |
-| UUID | `0e381b73-6bbd-486e-9da5-007d424b7555` |
-| Current mount point | None |
-| Listed in `/etc/fstab` | No |
-| Configured in Proxmox | No |
+Kali VM ID `100` is currently connected to `vmbr0` through a Proxmox-generated firewall bridge path. Virtual machines attached to `vmbr0` may communicate with other systems on the trusted home network, subject to firewall and routing controls.
 
-The secondary HDD already contains an ext4 filesystem. It has not been reformatted or modified during Project Aegis.
+Intentionally vulnerable systems must not be connected to `vmbr0` after isolated lab networking is introduced.
 
-Before it is permanently mounted or added to Proxmox, its existing contents will be inspected using a temporary read-only mount.
+## 10. Active Virtual Guest
 
-### Storage Observations
+| Asset ID | VM ID | Name | vCPU | Memory | Disk | Storage | Network | Status |
+|---|---:|---|---:|---:|---:|---|---|---|
+| `PASL-VM-001` | `100` | `aegis-lab-kali-01` | 2 | 4096 MB | 40 GiB | `local-lvm` | `vmbr0` | Running during validation |
 
-- Proxmox is installed on the 238.5 GB Kingston NVMe SSD.
-- The Proxmox root logical volume provides approximately 68 GB for the host operating system.
-- The `local` storage resource is located at `/var/lib/vz`.
-- The `local` resource permits ISO images, container templates, backups, and imports.
-- The `local-lvm` resource uses the `pve/data` LVM thin pool.
-- The `local-lvm` resource provides approximately 141.2 GiB for VM and container disks.
-- `local-lvm` currently shows 0% utilization.
-- The 1 TB Toshiba HDD contains an ext4 filesystem on `/dev/sda2`.
-- `/dev/sda2` is not currently mounted.
-- `/dev/sda2` is not listed in `/etc/fstab`.
-- `/dev/sda2` is not currently managed by Proxmox.
-- The secondary HDD must be inspected before it is permanently mounted or assigned a Proxmox storage role.
+Kali is the only deployed QEMU virtual machine. No LXC containers are currently deployed.
 
----
+## 11. Active Host Software and Administrative Services
 
-## Network Interfaces
+| Asset or Component | Version or State | Security Relevance |
+|---|---|---|
+| Proxmox VE | 9.1.1 | Hypervisor and management platform |
+| QEMU Server | 9.0.30 | Virtual-machine management |
+| Proxmox Firewall | 6.0.4; service active | Firewall service state does not prove enforcement or rule coverage |
+| OpenSSH Server | `1:10.0p1-7`; active | Remote administration through TCP port 22 |
+| Proxmox web proxy | Active | Management interface through TCP port 8006 |
+| SPICE proxy | Active | Administrative console service through TCP port 3128 |
 
-| Interface | Type | Status | Address | Purpose |
+Validated host listeners include:
+
+| Protocol | Port | Service | Bind Scope |
+|---|---:|---|---|
+| TCP | 22 | SSH | Wildcard — all host interfaces |
+| TCP | 25 | Postfix | Loopback only |
+| TCP | 85 | Proxmox API daemon | Loopback only |
+| TCP | 111 | `rpcbind` | Wildcard — all host interfaces |
+| TCP | 3128 | SPICE proxy | Wildcard — all host interfaces |
+| TCP | 8006 | Proxmox web management | Wildcard — all host interfaces |
+| UDP | 111 | `rpcbind` | Wildcard — all host interfaces |
+| UDP | 323 | `chronyd` command interface | Loopback only |
+
+Wildcard binding does not prove internet exposure. Effective reachability depends on the host firewall, upstream router, segmentation, and routing. Administrative services must remain limited to trusted systems and networks. The need for wildcard `rpcbind` remains a later attack-surface review item.
+
+## 12. Administrative Access
+
+| Access Method | Purpose | Security Requirement |
+|---|---|---|
+| Proxmox web interface | Primary host administration | Restrict to trusted internal access; do not forward TCP 8006 from the internet |
+| Proxmox shell | Local or browser-based command administration | Use only for authorized management activities |
+| SSH | Remote command administration | Restrict to trusted systems and assess authentication controls |
+| Physical console | Recovery and local administration | Maintain physical protection of the laptop |
+
+Credentials, authentication material, and private keys must never be committed to the public repository.
+
+## 13. Capacity and Risk Considerations
+
+| Condition or Risk | Potential Impact | Current or Planned Treatment |
+|---|---|---|
+| Limited memory | VM performance degradation or failed service startup | Run only required VMs simultaneously |
+| NVMe capacity exhaustion | Host or VM instability | Monitor `local` and `local-lvm`; use `aegis-hdd` for supported content |
+| Secondary HDD failure | Loss of ISO, backup, or template data | Maintain backup planning and monitor storage health |
+| VM attached to trusted home network | Exposure of non-lab devices | Introduce isolated lab networking before deploying vulnerable systems |
+| Administrative wildcard listeners | Unauthorized internal access | Restrict with firewall and access-control implementation |
+| Stale configuration records | Incorrect security or capacity decisions | Reconcile documentation with command-based evidence |
+| Credential exposure | Unauthorized access | Sanitize evidence and never commit secrets |
+| Host failure | Loss of active VM workloads | Maintain backups separate from VM snapshots |
+
+## 14. Baseline Validation Status
+
+- [x] Proxmox node identity and platform version validated.
+- [x] Processor, memory, and swap validated.
+- [x] Physical and logical storage layout validated.
+- [x] `local`, `local-lvm`, and `aegis-hdd` status and utilization validated.
+- [x] Secondary HDD mount and persistent `/etc/fstab` configuration validated with UUID redacted.
+- [x] Active physical and virtual network interfaces validated.
+- [x] Stale `nic1` entry reconciled as excluded from the active inventory.
+- [x] Active VM and container inventory validated.
+- [x] Core host services, package versions, listeners, and bind scopes validated.
+- [x] Public inventory reviewed for removal of the exposed filesystem UUID and stale storage claims.
+
+## 15. Related Evidence
+
+- [`Proxmox Host Hardware Validation`](../01-system-understanding/evidence/proxmox-host-hardware-validation.md)
+- [`Proxmox Network Interface Validation`](../01-system-understanding/evidence/proxmox-network-interface-validation.md)
+- [`Proxmox Network Controller Reconciliation`](../01-system-understanding/evidence/proxmox-network-controller-reconciliation.md)
+- [`Proxmox Storage Validation`](../01-system-understanding/evidence/proxmox-storage-validation.md)
+- [`Proxmox Host Service Validation`](../01-system-understanding/evidence/proxmox-host-service-validation.md)
+- [`Proxmox Guest Inventory Validation`](../01-system-understanding/evidence/proxmox-guest-inventory-validation.md)
+
+## 16. Revision History
+
+| Version | Date | Author | Change Summary | Status |
 |---|---|---|---|---|
-| `nic0` | Physical Ethernet interface | Up | No address assigned directly | Physical network connection used by the Proxmox bridge |
-| `wlo1` | Wireless interface | Down | No address assigned | Currently unused |
-| `vmbr0` | Linux bridge | Up | `10.0.0.x/24` | Proxmox management access and initial VM connectivity |
-| `lo` | Loopback interface | Unknown/active locally | `127.0.0.1/8`, `::1/128` | Local host communication |
-
-### Interface Observations
-
-- The Proxmox management IP address is assigned to `vmbr0`, not directly to the physical Ethernet interface.
-- The physical interface `nic0` is active and is expected to be attached to `vmbr0`.
-- The wireless interface `wlo1` is currently disabled.
-- The Proxmox host also has an automatically generated IPv6 link-local address on `vmbr0`.communication                       |
-
-## Routing Configuration
-
-| Field | Value |
-|---|---|
-| Management network | `10.0.0.0/24` |
-| Proxmox management address | `10.0.0.x/24` |
-| Default gateway | `10.0.0.1` |
-| Default-route interface | `vmbr0` |
-| Connected route | `10.0.0.0/24` through `vmbr0` |
-| Current network mode | Bridged to the home network |
-
-### Route Details
-
-
-
-default via 10.0.0.1 dev vmbr0
-
-
-
-## Network Security Notes
-
-The initial configuration prioritizes ease of setup and connectivity.
-
-Current considerations include:
-
-- Virtual machines attached to `vmbr0` may be able to communicate with other devices on the home network.
-- Kali Linux and other security tools must only be used against authorized lab systems.
-- Intentionally vulnerable machines should not remain connected to `vmbr0` after isolated lab networking is introduced.
-- No Proxmox administrative ports should be forwarded through the home router.
-- The Proxmox web interface should only be accessible from trusted internal devices.
-- Future milestones will introduce pfSense and isolated virtual bridges.
-- Firewall and segmentation testing should occur only inside the controlled lab network.
-
-## Network Design
-
-The Proxmox host currently uses a bridged network configuration.
-
-The physical Ethernet interface provides connectivity to the home network, while `vmbr0` functions as a virtual Ethernet switch. The Proxmox management interface and any virtual machines connected to `vmbr0` can communicate through the physical adapter.
-
-The current traffic path is:
-
-
-Home Router
-    |
-Physical Ethernet Connection
-    |
-nic0
-    |
-vmbr0
-    |
-Proxmox Management Interface
-and Connected Virtual Machines
-
-## Current Network Architecture
-
-
-Internet
-   |
-Home Router
-Gateway: 10.0.0.1
-   |
-Home LAN: 10.0.0.0/24
-   |
-Physical Interface: nic0
-   |
-Linux Bridge: vmbr0
-Management IP: 10.0.0.x/24
-   |
-Future Virtual Machines
-
----
-
-## Administrative Access
-
-| Access method         | Purpose                           | Security consideration                      |
-| --------------------- | --------------------------------- | ------------------------------------------- |
-| Proxmox web interface | Primary host administration       | Restrict access to the trusted home network |
-| Proxmox shell         | Command-line administration       | Use only when necessary                     |
-| SSH                   | Optional remote administration    | Disable or restrict when not required       |
-| Physical console      | Recovery and local administration | Laptop should remain physically protected   |
-
-### Administrative Security Baseline
-
-* Use a strong, unique Proxmox administrator password.
-* Do not expose TCP port `8006` directly to the internet.
-* Do not publish credentials or authentication information in GitHub.
-* Keep Proxmox updated.
-* Use a non-root administrative account later when practical.
-* Back up important configuration before major changes.
-* Record significant changes in the project changelog.
-
----
-
-## Current Resource Constraints
-
-The current host has several limitations that affect the lab design:
-
-1. The system contains approximately 16 GB of RAM.
-2. Not all planned virtual machines can operate simultaneously.
-3. The SSD has limited capacity.
-4. The secondary HDD provides more capacity but lower performance.
-5. The laptop has limited physical network-interface options.
-6. Some networking exercises may require virtual interfaces or a USB Ethernet adapter.
-7. The laptop battery provides short-term power protection but is not a replacement for a proper backup strategy.
-
----
-
-## Risk Considerations
-
-| Risk                                        | Potential impact                    | Planned control                          |
-| ------------------------------------------- | ----------------------------------- | ---------------------------------------- |
-| Vulnerable VM connected to the home network | Other devices may be exposed        | Introduce isolated lab networks          |
-| Insufficient memory                         | Poor performance or failed services | Run only required VMs                    |
-| SSD capacity exhaustion                     | VM or host instability              | Monitor storage and use HDD for archives |
-| Accidental deletion                         | Loss of lab progress                | Use backups and GitHub documentation     |
-| Credential exposure                         | Unauthorized access                 | Never commit credentials                 |
-| Internet exposure                           | External compromise                 | Do not configure inbound port forwarding |
-| Host failure                                | Loss of virtual machines            | Store backups on secondary storage       |
-
----
-
-## Baseline Validation
-
-The following checks were completed:
-
-* [X] Proxmox web interface is accessible
-* [X] Node status shows expected CPU and memory
-* [X] Proxmox version is recorded
-* [X] Physical storage devices are identified
-* [X] Proxmox storage pools are identified
-* [X] The primary Linux bridge is identified
-* [X] The default gateway is recorded privately
-* [X] No Proxmox administrative service is intentionally exposed to the internet
-* [X] Host inventory information has been sanitized before publication
-
----
-
-## Evidence to Capture
-
-Store sanitized screenshots in:
-
-
-screenshots/proxmox/
-
-
-Recommended screenshots:
-
-1. Proxmox node summary
-2. Storage overview
-3. Network interface overview
-4. Proxmox version information
-5. Disk layout
-
-Use descriptive filenames:
-
-
-proxmox-node-summary.png
-proxmox-storage-overview.png
-proxmox-network-overview.png
-
-
-Review every screenshot before committing it to ensure it does not expose information you do not want public.
-
----
-
-## Next Steps
-
-1. Confirm the SSD and HDD configuration.
-2. Create a formal storage plan.
-3. Document the current Proxmox network bridge.
-4. Establish a virtual-machine naming convention.
-5. Create the initial VM inventory.
-6. Capture sanitized screenshots.
+| 1.0 | 2026-07-26 | Javier Delgado | Replaced contradictory legacy host records with the validated Proxmox 9.1.1 hardware, storage, network, guest, and service baseline; removed the published filesystem UUID | Current |
