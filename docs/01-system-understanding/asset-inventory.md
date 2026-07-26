@@ -1,0 +1,296 @@
+# Project Aegis Security Lab — Asset Inventory
+
+| Field | Value |
+|---|---|
+| System Name | Project Aegis Security Lab |
+| System Identifier | PASL |
+| Document Owner | Javier Delgado |
+| Version | 0.9 |
+| Status | Ready for Owner Review |
+| Date | 2026-07-26 |
+| Authorization Status | Not Authorized — System Definition in Progress |
+
+## 1. Objective
+
+This document identifies and tracks the hardware, virtual machines, storage, networking components, software platforms, and information assets used by Project Aegis Security Lab.
+
+The inventory supports system-boundary definition, configuration management, vulnerability management, security assessment, incident response, change control, and continuous monitoring.
+
+## 2. Inventory Rules
+
+An item is entered in the active inventory when it is deployed, assigned to Project Aegis, and available for use. Planned systems are not treated as active assets until deployment and validation are complete.
+
+Each managed asset receives a stable Project Aegis asset identifier. Asset identifiers should remain associated with the asset throughout its lifecycle, including suspension, retirement, or replacement.
+
+The public inventory must not contain passwords, tokens, private keys, public IP addresses, hardware serial numbers, MAC addresses, personal account names, or unsanitized sensitive findings.
+
+## 3. Asset Identifier Standard
+
+| Prefix | Asset Category | Example |
+|---|---|---|
+| `PASL-HW` | Physical computing hardware | `PASL-HW-001` |
+| `PASL-STO` | Storage device or storage service | `PASL-STO-001` |
+| `PASL-NET` | Network interface, bridge, firewall, or network service | `PASL-NET-001` |
+| `PASL-VM` | Virtual machine | `PASL-VM-001` |
+| `PASL-SW` | Managed software platform or security tool | `PASL-SW-001` |
+| `PASL-INF` | Information, documentation, logs, or evidence | `PASL-INF-001` |
+
+## 4. Active Managed Assets
+
+| Asset ID | Category | Asset Name | Description and Role | Location or Host | Network Association | Operational Status | Validation Status |
+|---|---|---|---|---|---|---|---|
+| `PASL-HW-001` | Physical host | Proxmox virtualization host | ASUS TUF Gaming Laptop FX504 used as the bare-metal platform for Project Aegis virtual machines, virtual networking, and storage services | Privately controlled physical location | Management through `vmbr0` | Operational | Validated — hostname, operating platform, processor, memory, disks, network controllers, and host services confirmed on 2026-07-26 |
+| `PASL-STO-001` | Primary storage | Kingston RBUSNS8154P3256GJ NVMe SSD | Hosts Proxmox system files, LVM storage, and active VM disks | `/dev/nvme0n1` in `PASL-HW-001` | Not directly networked | Operational | Validated — 238.5 GiB NVMe device, root and swap volumes, LVM thin pool, and VM ID `100` disk confirmed on 2026-07-26 |
+| `PASL-STO-002` | Secondary storage | Toshiba MQ04ABF100 / `aegis-hdd` | Directory storage for ISO files, backups, snippets, and container templates | `/dev/sda2` mounted at `/mnt/pve/aegis-hdd` | Available through Proxmox storage services | Operational | Validated — 931.5 GiB SATA device, read/write ext4 mount, sanitized persistent `/etc/fstab` entry, and active Proxmox storage confirmed on 2026-07-26 |
+| `PASL-NET-001` | Physical network interface | `nic0` | Physical Realtek Gigabit Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001`; driver `r8169` | Member of `vmbr0`; connected to the trusted home network | Operational | Validated — interface up, forwarding through `vmbr0`, and mapped to the Realtek wired controller on 2026-07-26 |
+| `PASL-NET-002` | Virtual network bridge | `vmbr0` | Linux bridge providing current Proxmox management, default-route, and VM connectivity | Configured on `PASL-HW-001` | Home-network bridged connection | Operational | Validated — bridge up, `nic0` attached, and default route present on 2026-07-26 |
+| `PASL-VM-001` | Virtual machine | `aegis-lab-kali-01` | Kali Linux security administration and authorized testing workstation | Proxmox VM ID `100` on `PASL-HW-001` | VirtIO adapter on `vmbr0`; DHCP; Proxmox firewall enabled | Operational | Validated — CPU, memory, disk, network, guest agent, boot media, snapshot, operating system, services, and listener state confirmed on 2026-07-26 |
+| `PASL-SW-001` | Hypervisor platform | Proxmox Virtual Environment | Provides virtualization, virtual networking, storage integration, snapshots, administrative management, scheduling, console access, and host firewall services | Installed on `PASL-HW-001` | Management services available through `vmbr0` | Operational | Validated — Proxmox 9.1.1 platform, core services, package versions, listening ports, and bind scopes recorded on 2026-07-26 |
+| `PASL-SW-002` | Remote administration service | OpenSSH Server — Proxmox host | Provides command-line remote administration of the Proxmox host | Installed on `PASL-HW-001` | TCP port 22; wildcard listener on all host interfaces | Operational | Validated — service active; package version `1:10.0p1-7`; access restrictions require later control assessment |
+| `PASL-SW-003` | Guest operating system | Kali GNU/Linux Rolling | Operating system for the Project Aegis security administration and testing workstation | Installed in `PASL-VM-001` | Uses the VM network association | Operational | Validated — hostname and kernel `7.0.12+kali-amd64` confirmed on 2026-07-26 |
+| `PASL-SW-004` | Guest integration service | QEMU Guest Agent | Supports Proxmox guest-state reporting and management integration | Installed in `PASL-VM-001` | Local hypervisor-to-guest integration | Operational | Validated — service active; package version `1:11.0.1+ds-1` |
+| `PASL-SW-005` | Remote administration service | OpenSSH Server — Kali VM | Provides optional remote shell access to Kali when enabled | Installed in `PASL-VM-001` | No listener observed at validation | Installed — service inactive | Validated — package version `1:10.3p1-5`; service inactive; no TCP port 22 listener |
+| `PASL-SW-006` | Security assessment tool | Nmap | Authorized network discovery and assessment tool | Installed in `PASL-VM-001` | Initiates authorized outbound assessment traffic when used | Operational | Validated — package version `7.99+dfsg-1kali1` |
+| `PASL-INF-001` | Information asset | Project documentation and evidence | System documentation, diagrams, configuration records, findings, screenshots, and assessment evidence | GitHub repository and approved local working copies | External hosted repository | Operational | Version controlled; public-content sanitization required |
+
+## 5. Validated Host Configuration
+
+| Field | Current Value |
+|---|---|
+| Asset ID | `PASL-HW-001` |
+| Proxmox node hostname | `proxmox` |
+| Hardware platform | ASUS TUF Gaming Laptop FX504 |
+| Proxmox VE version | 9.1.1 |
+| Proxmox package identifier | `pve-manager/9.1.1/42db4a6cf33dac83` |
+| Operating system | Debian GNU/Linux 13 (trixie) |
+| Running kernel | `6.17.2-1-pve` |
+| Processor | Intel Core i7-8750H CPU @ 2.20 GHz |
+| CPU sockets | 1 |
+| Physical cores | 6 |
+| Threads per core | 2 |
+| Logical processors | 12 |
+| Operating-system-reported memory | 15 GiB |
+| Configured swap | 8 GiB |
+
+Point-in-time memory utilization is retained in the supporting evidence but is not treated as a fixed asset characteristic.
+
+### 5.1 Validated Storage Configuration
+
+| Storage ID | Backing Resource | Type | Status | Total (KiB) | Used (KiB) | Available (KiB) | Utilization |
+|---|---|---|---|---:|---:|---:|---:|
+| `local` | `pve-root` / `/var/lib/vz` | Directory | Active | 71,017,632 | 5,173,128 | 62,191,284 | 7.28% |
+| `local-lvm` | `pve-data` thin pool | LVM thin | Active | 148,086,784 | 22,494,382 | 125,592,401 | 15.19% |
+| `aegis-hdd` | `/dev/sda2` at `/mnt/pve/aegis-hdd` | Directory | Active | 959,786,032 | 11,098,948 | 899,858,876 | 1.16% |
+
+`aegis-hdd` is mounted read/write as ext4 and persists through a sanitized `/etc/fstab` entry using `defaults,nofail`. Its Proxmox configuration permits `backup`, `snippets`, `iso`, and `vztmpl` content and marks the storage as non-shared. The public repository does not retain the filesystem UUID.
+
+The reconciled [`Proxmox Host Inventory`](../01-proxmox/host-inventory.md) replaces earlier stale statements that the secondary HDD was unmounted or unmanaged.
+
+## 6. Validated Network Configuration
+
+| Field | Current Value |
+|---|---|
+| Physical Ethernet asset | `PASL-NET-001` — `nic0` |
+| Physical interface state | Up |
+| Wired controller | Realtek RTL8111/8168-family Gigabit Ethernet controller |
+| Wired driver | `r8169` |
+| Primary bridge asset | `PASL-NET-002` — `vmbr0` |
+| Bridge state | Up |
+| Physical bridge membership | `nic0` attached to `vmbr0` |
+| Proxmox management addressing | Static configuration on `vmbr0`; address sanitized from public evidence |
+| Default route | Through `vmbr0`; gateway sanitized from public evidence |
+| Wireless interface | `wlo1`; Intel Wireless-AC 9560 using `iwlwifi`; down and not used by Project Aegis |
+| VM ID `100` runtime path | `tap100i0` → `fwbr100i0` → firewall link pair → `vmbr0` |
+
+The VM-specific interfaces `tap100i0`, `fwbr100i0`, `fwpr100p0`, and `fwln100i0` are generated and maintained by Proxmox. They demonstrate an active firewall bridge path for VM ID `100`, but they are not assigned independent persistent asset identifiers.
+
+The persistent configuration contains `iface nic1 inet manual`, but validation found no runtime `nic1`, no second wired network controller, and no driver-backed interface matching that name. The entry is classified as stale or unused and is excluded from the active asset inventory. It may be removed later through controlled configuration cleanup after a backup is created.
+
+The kernel control interface `bonding_masters` is not an active Project Aegis network asset.
+
+## 7. Active Virtual Guest Summary
+
+| Asset ID | VM ID | Hostname | Operating System | vCPU | RAM | Disk | Storage | Network | IP Assignment | Status |
+|---|---:|---|---|---:|---:|---:|---|---|---|---|
+| `PASL-VM-001` | `100` | `aegis-lab-kali-01` | Kali Linux | 2 | 4 GB | 40 GB | `local-lvm` | `vmbr0` | DHCP | Active |
+
+Validation confirmed that Kali Linux is the only deployed QEMU virtual machine and that no LXC containers are currently deployed.
+
+## 8. Validated Kali VM Configuration
+
+| Field | Current Value |
+|---|---|
+| Asset ID | `PASL-VM-001` |
+| Proxmox VM ID | `100` |
+| Name | `aegis-lab-kali-01` |
+| Operating-system type | Linux 2.6 or newer (`l26`) |
+| CPU configuration | 1 socket, 2 cores, host CPU passthrough |
+| Assigned memory | 4096 MB |
+| QEMU Guest Agent | Enabled |
+| Primary disk | 40 GB SCSI disk on `local-lvm` |
+| SCSI controller | `virtio-scsi-single` |
+| Disk options | Discard enabled, I/O thread enabled, SSD emulation enabled |
+| Network adapter | VirtIO adapter on `vmbr0` |
+| Proxmox network firewall | Enabled |
+| IP assignment | DHCP |
+| Attached installation media | Kali Linux 2026.2 installer ISO from `aegis-hdd` |
+| Boot order | SCSI disk, virtual CD-ROM, network adapter |
+| Baseline snapshot | `baseline-clean-install` |
+| Snapshot date | 2025-10-01 |
+
+The virtual network adapter MAC address is intentionally excluded from the public inventory. The installer ISO remains attached and should be reviewed for removal when no longer operationally required. The baseline snapshot is a rollback aid and is not treated as an independent backup.
+
+## 9. Validated Proxmox Host Software and Services
+
+### 9.1 Core Service Status
+
+| Service | Purpose | Status |
+|---|---|---|
+| `pve-cluster` | Proxmox configuration filesystem | Active |
+| `pvedaemon` | Proxmox API daemon | Active |
+| `pveproxy` | Proxmox HTTPS management proxy | Active |
+| `pvestatd` | Node and guest status collection | Active |
+| `pve-firewall` | Proxmox firewall service | Active |
+| `pvefw-logger` | Firewall logging | Active |
+| `qmeventd` | QEMU event handling | Active |
+| `spiceproxy` | SPICE console proxy | Active |
+| `ssh` | OpenSSH remote administration | Active |
+
+Additional running Proxmox services include `pve-ha-crm`, `pve-ha-lrm`, `pve-lxc-syscalld`, and `pvescheduler`. Their presence is part of the installed Proxmox platform and does not prove that a multi-node cluster, high-availability workload, or LXC container is configured.
+
+### 9.2 Package Versions
+
+| Package | Version |
+|---|---|
+| `pve-manager` | `9.1.1` |
+| `qemu-server` | `9.0.30` |
+| `pve-firewall` | `6.0.4` |
+| `openssh-server` | `1:10.0p1-7` |
+
+### 9.3 Sanitized Listening-Port and Bind-Scope Baseline
+
+| Protocol | Port | Service or Process | Preliminary Purpose | Validated Bind Scope |
+|---|---:|---|---|---|
+| TCP | 22 | `sshd` | SSH administration | Wildcard — all host interfaces |
+| TCP | 25 | Postfix `master` | Local mail and system notifications | Loopback only |
+| TCP | 85 | `pvedaemon` | Proxmox API daemon communication | Loopback only |
+| TCP | 111 | `rpcbind` | RPC service mapping | Wildcard — all host interfaces |
+| TCP | 3128 | `spiceproxy` | SPICE console proxy | Wildcard — all host interfaces |
+| TCP | 8006 | `pveproxy` | Proxmox web-management interface | Wildcard — all host interfaces |
+| UDP | 111 | `rpcbind` | RPC service mapping | Wildcard — all host interfaces |
+| UDP | 323 | `chronyd` | Time-synchronization command interface | Loopback only |
+
+A wildcard listener accepts traffic addressed to any active interface on the Proxmox host. It does not by itself prove internet exposure; actual reachability also depends on firewall rules, upstream router configuration, segmentation, and routing.
+
+The wildcard listeners on SSH, SPICE, and the Proxmox web interface are administrative attack-surface items that must remain limited to trusted systems or networks. The operational need for wildcard `rpcbind` on TCP and UDP port `111` should be reviewed. Postfix, `pvedaemon`, and the `chronyd` command interface are loopback-only.
+
+The active state of `pve-firewall` confirms that the service is running, but it does not by itself confirm that firewall enforcement or a protective ruleset is enabled. Firewall policy state remains a separate security-baseline item.
+
+## 10. Validated Kali Software and Services
+
+### 10.1 System Identity
+
+| Field | Current Value |
+|---|---|
+| Hostname | `aegis-lab-kali-01` |
+| Operating system | Kali GNU/Linux Rolling |
+| Kernel | `7.0.12+kali-amd64` |
+
+### 10.2 Security-Relevant Service Status
+
+| Service | Purpose | Status |
+|---|---|---|
+| `qemu-guest-agent` | Proxmox guest integration | Active |
+| `NetworkManager` | Network configuration and connectivity | Active |
+| `ssh` | Remote shell service | Inactive |
+| `cron` | Scheduled task execution | Active |
+| `rsyslog` | Traditional system logging | Not installed |
+| `auditd` | Linux auditing | Not installed |
+| `ufw` | Host firewall management | No service unit installed |
+| `firewalld` | Dynamic host firewall management | Not installed |
+
+### 10.3 Validated Package Versions
+
+| Package | Version |
+|---|---|
+| `qemu-guest-agent` | `1:11.0.1+ds-1` |
+| `openssh-server` | `1:10.3p1-5` |
+| `nmap` | `7.99+dfsg-1kali1` |
+
+The package query returned an incomplete `ufw` entry without a validated version. UFW is therefore not treated as a validated installed package or active service in this inventory.
+
+### 10.4 Listening-Service Baseline
+
+The sanitized validation returned no listening TCP or UDP services. The installed OpenSSH Server package was not exposing TCP port 22 because the `ssh` service was inactive.
+
+The lack of guest-level listeners reduces the Kali VM inbound attack surface at the time of validation. The absence of `auditd`, `rsyslog`, and an active guest firewall service will be evaluated during later audit, logging, and system-boundary control implementation.
+
+## 11. External Supporting Dependencies
+
+These items support Project Aegis but are not managed as internal Project Aegis assets.
+
+| Dependency | Purpose | Managed by Project Aegis? | Boundary Treatment |
+|---|---|---|---|
+| Home router | Gateway, DHCP, and internet connectivity | No | External dependency |
+| Internet service provider | Internet connectivity | No | External dependency |
+| GitHub platform | Public repository hosting and version control | No | External service supporting `PASL-INF-001` |
+| Vendor update repositories | Operating-system and application updates | No | External software-supply dependency |
+| Proxmox repositories | Hypervisor packages and updates | No | External software-supply dependency |
+
+## 12. Planned Assets
+
+Planned systems are tracked in project planning documents but are excluded from the active asset inventory until they are deployed and validated. These include Windows Server, Windows 11, Ubuntu Server, vulnerability-scanning services, centralized monitoring platforms, and a dedicated firewall or routing platform.
+
+## 13. Inventory Maintenance Requirements
+
+Update this inventory when:
+
+- A physical device, VM, container, interface, storage resource, or security tool is added or removed.
+- An asset changes hostname, VM ID, purpose, owner, location, network association, or operational status.
+- CPU, memory, storage, operating-system, or software-version details materially change.
+- An asset is suspended, archived, retired, replaced, or restored.
+- A vulnerability, incident, or configuration review identifies an undocumented asset.
+- The authorization boundary or inventory standard changes.
+
+## 14. Validation and Approval Status
+
+- [x] Validate the current Proxmox hostname, version, kernel, processor, and memory.
+- [x] Validate physical disk models, capacities, and device assignments without publishing serial numbers.
+- [x] Validate active physical and virtual network interfaces.
+- [x] Validate the complete configuration of VM ID `100`.
+- [x] Validate active managed software services on the Proxmox host.
+- [x] Classify Proxmox listener bind scopes without publishing local IP addresses.
+- [x] Validate active managed software and listening services inside the Kali VM.
+- [x] Reconcile the unused `nic1` entry with runtime interfaces and physical network controllers.
+- [x] Reconcile stale legacy host-inventory statements with the validated active configuration.
+- [ ] Owner review and approval of the active asset list.
+
+## 15. Related Documentation
+
+- [`System Description`](system-description.md)
+- [`Phase 1 README`](README.md)
+- [`Proxmox Host Inventory`](../01-proxmox/host-inventory.md)
+- [`Virtual Machine Inventory`](../01-proxmox/vm-inventory.md)
+- [`Current Network Architecture`](../01-proxmox/current-network-architecture.md)
+- [`Proxmox Guest Inventory Validation`](evidence/proxmox-guest-inventory-validation.md)
+- [`Proxmox Host Hardware Validation`](evidence/proxmox-host-hardware-validation.md)
+- [`Proxmox Network Interface Validation`](evidence/proxmox-network-interface-validation.md)
+- [`Kali VM Configuration Validation`](evidence/kali-vm-configuration-validation.md)
+- [`Proxmox Host Service Validation`](evidence/proxmox-host-service-validation.md)
+- [`Kali Service Validation`](evidence/kali-service-validation.md)
+- [`Proxmox Network Controller Reconciliation`](evidence/proxmox-network-controller-reconciliation.md)
+- [`Proxmox Storage Validation`](evidence/proxmox-storage-validation.md)
+
+## 16. Revision History
+
+| Version | Date | Author | Change Summary | Status |
+|---|---|---|---|---|
+| 0.1 | 2026-07-25 | Javier Delgado | Created the initial asset inventory using validated Project Aegis system-description and guest-inventory evidence | In Progress |
+| 0.2 | 2026-07-26 | Javier Delgado | Validated the Proxmox host identity, platform version, processor, memory, and physical storage devices | In Progress |
+| 0.3 | 2026-07-26 | Javier Delgado | Validated `nic0`, `vmbr0`, the default-route path, the VM ID `100` firewall bridge path, and recorded the inactive wireless and unmatched `nic1` configuration | In Progress |
+| 0.4 | 2026-07-26 | Javier Delgado | Validated the complete VM ID `100` compute, storage, network, guest-agent, boot-media, and snapshot configuration | In Progress |
+| 0.5 | 2026-07-26 | Javier Delgado | Validated Proxmox core services, software package versions, OpenSSH, and the sanitized host listening-port baseline | In Progress |
+| 0.6 | 2026-07-26 | Javier Delgado | Classified Proxmox listener bind scopes and identified wildcard administrative and RPC attack-surface items | In Progress |
+| 0.7 | 2026-07-26 | Javier Delgado | Validated Kali system identity, security-relevant service state, selected package versions, and the absence of listening TCP or UDP services | In Progress |
+| 0.8 | 2026-07-26 | Javier Delgado | Reconciled persistent network configuration with runtime interfaces and hardware controllers; classified `nic1` as a stale or unused entry | In Progress |
+| 0.9 | 2026-07-26 | Javier Delgado | Validated Proxmox storage utilization, reconciled the secondary HDD mount and Proxmox configuration, and replaced contradictory legacy host-inventory statements | Ready for Owner Review |
