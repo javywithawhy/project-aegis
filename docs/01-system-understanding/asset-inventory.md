@@ -5,7 +5,7 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.2 |
+| Version | 0.3 |
 | Status | In Progress |
 | Date | 2026-07-26 |
 | Authorization Status | Not Authorized — System Definition in Progress |
@@ -42,8 +42,8 @@ The public inventory must not contain passwords, tokens, private keys, public IP
 | `PASL-HW-001` | Physical host | Proxmox virtualization host | ASUS TUF Gaming Laptop FX504 used as the bare-metal platform for Project Aegis virtual machines, virtual networking, and storage services | Privately controlled physical location | Management through `vmbr0` | Operational | Validated — hostname, operating platform, processor, memory, and disks confirmed on 2026-07-26 |
 | `PASL-STO-001` | Primary storage | Kingston RBUSNS8154P3256GJ NVMe SSD | Hosts Proxmox system files, LVM storage, and active VM disks | `/dev/nvme0n1` in `PASL-HW-001` | Not directly networked | Operational | Validated — 238.5 GiB NVMe device confirmed on 2026-07-26 |
 | `PASL-STO-002` | Secondary storage | Toshiba MQ04ABF100 / `aegis-hdd` | Directory storage for ISO files, backups, templates, archives, and supporting project data | `/dev/sda2` mounted at `/mnt/pve/aegis-hdd` | Available through Proxmox storage services | Operational | Validated — 931.5 GiB SATA device and active Proxmox storage confirmed |
-| `PASL-NET-001` | Physical network interface | `nic0` | Physical Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001` | Connected to the trusted home network | Operational | Partial — requires current interface-state validation |
-| `PASL-NET-002` | Virtual network bridge | `vmbr0` | Linux bridge providing current management and VM connectivity | Configured on `PASL-HW-001` | Home-network bridged connection | Operational | Partial — current interface membership requires validation |
+| `PASL-NET-001` | Physical network interface | `nic0` | Physical Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001` | Member of `vmbr0`; connected to the trusted home network | Operational | Validated — interface up and forwarding through `vmbr0` on 2026-07-26 |
+| `PASL-NET-002` | Virtual network bridge | `vmbr0` | Linux bridge providing current Proxmox management, default-route, and VM connectivity | Configured on `PASL-HW-001` | Home-network bridged connection | Operational | Validated — bridge up, `nic0` attached, and default route present on 2026-07-26 |
 | `PASL-VM-001` | Virtual machine | `aegis-lab-kali-01` | Kali Linux security administration and authorized testing workstation | Proxmox VM ID `100` on `PASL-HW-001` | `vmbr0`; DHCP | Operational | Validated using `qm list` and prior configuration review |
 | `PASL-SW-001` | Hypervisor platform | Proxmox Virtual Environment | Provides virtualization, virtual networking, storage integration, snapshots, and administrative management | Installed on `PASL-HW-001` | Managed through the Proxmox management interface | Operational | Validated — `pve-manager/9.1.1/42db4a6cf33dac83`, Debian 13, kernel `6.17.2-1-pve` |
 | `PASL-INF-001` | Information asset | Project documentation and evidence | System documentation, diagrams, configuration records, findings, screenshots, and assessment evidence | GitHub repository and approved local working copies | External hosted repository | Operational | Version controlled; public-content sanitization required |
@@ -69,7 +69,25 @@ The public inventory must not contain passwords, tokens, private keys, public IP
 
 Point-in-time memory utilization is retained in the supporting evidence but is not treated as a fixed asset characteristic.
 
-## 6. Active Virtual Guest Summary
+## 6. Validated Network Configuration
+
+| Field | Current Value |
+|---|---|
+| Physical Ethernet asset | `PASL-NET-001` — `nic0` |
+| Physical interface state | Up |
+| Primary bridge asset | `PASL-NET-002` — `vmbr0` |
+| Bridge state | Up |
+| Physical bridge membership | `nic0` attached to `vmbr0` |
+| Proxmox management addressing | Static configuration on `vmbr0`; address sanitized from public evidence |
+| Default route | Through `vmbr0`; gateway sanitized from public evidence |
+| Wireless interface | `wlo1` exists but is down and not used by Project Aegis |
+| VM ID `100` runtime path | `tap100i0` → `fwbr100i0` → firewall link pair → `vmbr0` |
+
+The VM-specific interfaces `tap100i0`, `fwbr100i0`, `fwpr100p0`, and `fwln100i0` are generated and maintained by Proxmox. They demonstrate an active firewall bridge path for VM ID `100`, but they are not assigned independent persistent asset identifiers.
+
+The persistent network configuration contains an `iface nic1 inet manual` entry, although no `nic1` interface appeared in the runtime interface list. This discrepancy will be reconciled during legacy host-inventory cleanup.
+
+## 7. Active Virtual Guest Summary
 
 | Asset ID | VM ID | Hostname | Operating System | vCPU | RAM | Disk | Storage | Network | IP Assignment | Status |
 |---|---:|---|---|---:|---:|---:|---|---|---|---|
@@ -77,7 +95,7 @@ Point-in-time memory utilization is retained in the supporting evidence but is n
 
 Validation confirmed that Kali Linux is the only deployed QEMU virtual machine and that no LXC containers are currently deployed.
 
-## 7. External Supporting Dependencies
+## 8. External Supporting Dependencies
 
 These items support Project Aegis but are not managed as internal Project Aegis assets.
 
@@ -89,11 +107,11 @@ These items support Project Aegis but are not managed as internal Project Aegis 
 | Vendor update repositories | Operating-system and application updates | No | External software-supply dependency |
 | Proxmox repositories | Hypervisor packages and updates | No | External software-supply dependency |
 
-## 8. Planned Assets
+## 9. Planned Assets
 
 Planned systems are tracked in project planning documents but are excluded from the active asset inventory until they are deployed and validated. These include Windows Server, Windows 11, Ubuntu Server, vulnerability-scanning services, centralized monitoring platforms, and a dedicated firewall or routing platform.
 
-## 9. Inventory Maintenance Requirements
+## 10. Inventory Maintenance Requirements
 
 Update this inventory when:
 
@@ -104,17 +122,17 @@ Update this inventory when:
 - A vulnerability, incident, or configuration review identifies an undocumented asset.
 - The authorization boundary or inventory standard changes.
 
-## 10. Current Validation Tasks
+## 11. Current Validation Tasks
 
 - [x] Validate the current Proxmox hostname, version, kernel, processor, and memory.
 - [x] Validate physical disk models, capacities, and device assignments without publishing serial numbers.
-- [ ] Validate active physical and virtual network interfaces.
+- [x] Validate active physical and virtual network interfaces.
 - [ ] Validate the complete configuration of VM ID `100`.
 - [ ] Confirm whether any additional managed software services are active on the Proxmox host or Kali VM.
-- [ ] Reconcile stale host-inventory statements with the validated active configuration.
+- [ ] Reconcile stale host-inventory statements and the unused `nic1` configuration entry with the validated active configuration.
 - [ ] Review and approve the active asset list.
 
-## 11. Related Documentation
+## 12. Related Documentation
 
 - [`System Description`](system-description.md)
 - [`Phase 1 README`](README.md)
@@ -123,10 +141,12 @@ Update this inventory when:
 - [`Current Network Architecture`](../01-proxmox/current-network-architecture.md)
 - [`Proxmox Guest Inventory Validation`](evidence/proxmox-guest-inventory-validation.md)
 - [`Proxmox Host Hardware Validation`](evidence/proxmox-host-hardware-validation.md)
+- [`Proxmox Network Interface Validation`](evidence/proxmox-network-interface-validation.md)
 
-## 12. Revision History
+## 13. Revision History
 
 | Version | Date | Author | Change Summary | Status |
 |---|---|---|---|---|
 | 0.1 | 2026-07-25 | Javier Delgado | Created the initial asset inventory using validated Project Aegis system-description and guest-inventory evidence | In Progress |
 | 0.2 | 2026-07-26 | Javier Delgado | Validated the Proxmox host identity, platform version, processor, memory, and physical storage devices | In Progress |
+| 0.3 | 2026-07-26 | Javier Delgado | Validated `nic0`, `vmbr0`, the default-route path, the VM ID `100` firewall bridge path, and recorded the inactive wireless and unmatched `nic1` configuration | In Progress |
