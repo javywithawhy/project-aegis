@@ -28,6 +28,8 @@ The inventory supports:
 | `200` | `aegis-lab-wazuh-01`   | VM   | Ubuntu or Wazuh appliance | SIEM and monitoring                   |  2–4 | 4–6 GB | 80 GB | `local-lvm` | Future isolated network | Planned |
 | `101` | `aegis-lab-openvas-01` | VM   | Linux                     | Vulnerability scanner                 |  2–4 |   4 GB | 60 GB | `local-lvm` | Future security network | Planned |
 
+Validation using `qm list` and `pct list` confirmed that Kali Linux is the only deployed virtual machine and that no LXC containers are currently deployed. Planned entries are retained for capacity and architecture planning but are not active assets.
+
 ---
 
 ## Inventory Field Definitions
@@ -91,6 +93,7 @@ The inventory supports:
 * [`Kali Linux System Baseline`](../02-linux/system-baseline.md)
 * [`Kali ISO Preparation`](../04-kali/kali-iso-preparation.md)
 * [`Project Aegis System Description`](../01-system-understanding/system-description.md)
+* [`Proxmox Guest Inventory Validation`](../01-system-understanding/evidence/proxmox-guest-inventory-validation.md)
 
 ---
 
@@ -229,7 +232,7 @@ Private IP addresses may be sanitized using values such as:
 | Kali Linux deployed            | Complete |
 | Ubuntu Server deployed         | Pending  |
 | Windows workstation deployed   | Pending  |
-| Inventory validation completed | In Progress |
+| Current guest inventory validated | Complete |
 
 ---
 
@@ -239,3 +242,4 @@ Private IP addresses may be sanitized using values such as:
 |---|---|---|---|---|
 | 0.1 | 2026-07-16 | Javier Delgado | Initial planned virtual-machine inventory | Superseded |
 | 0.2 | 2026-07-25 | Javier Delgado | Validated Kali VM ID, resources, bridge, DHCP assignment, and active status | Draft |
+| 0.3 | 2026-07-25 | Javier Delgado | Confirmed one deployed QEMU VM, no LXC containers, and completed current guest inventory validation | Current |
