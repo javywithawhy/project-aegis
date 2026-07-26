@@ -1,386 +1,201 @@
-# Project Aegis
+# Project Aegis Security Lab
 
-**A hands-on cybersecurity homelab and portfolio focused on infrastructure security, vulnerability management, detection engineering, and secure architecture.**
+## Simulated ISSO and Risk Management Framework Portfolio
 
-Project Aegis documents the design and construction of a small enterprise-style security environment running on Proxmox. The project combines technical labs with professional documentation, including architecture diagrams, security assessments, remediation plans, runbooks, and executive summaries.
+Project Aegis Security Lab is a privately operated cybersecurity homelab designed to simulate the governance, documentation, security engineering, assessment, and continuous monitoring activities associated with a U.S. Government information system.
 
-The objective is not simply to install cybersecurity tools. Each phase examines why a technology is deployed, what security problem it addresses, how it should be configured, and how its effectiveness can be measured.
+The project is being developed as a professional portfolio demonstrating practical Information System Security Officer responsibilities, including:
 
----
+- Risk Management Framework activities
+- System security documentation
+- Security control implementation and assessment
+- Vulnerability and POA&M management
+- Continuous monitoring
+- Incident response
+- Change management
+- Risk reporting
+- Authorization to Operate preparation
 
-## Project Status
-
-**Current version:** `v0.1`
-**Current milestone:** Foundation
-**Current activity:** Repository setup and Proxmox documentation
-
-### Progress
-
-* [x] Install Proxmox
-* [x] Create the Project Aegis repository
-* [x] Create the initial repository structure
-* [x] Document the Proxmox host
-* [ ] Configure lab storage
-* [ ] Document virtual networking
-* [ ] Deploy Kali Linux
-* [ ] Deploy Ubuntu Server
-* [ ] Deploy a Windows workstation
-* [ ] Perform initial network discovery
-* [ ] Build the vulnerability management workflow
-* [ ] Deploy Active Directory
-* [ ] Deploy centralized logging and monitoring
-* [ ] Implement network segmentation
-* [ ] Complete the enterprise security capstone
+> **Current phase:** Phase 1 — System Understanding  
+> **Authorization status:** Not Authorized — System Definition in Progress
 
 ---
 
-## Project Objectives
+## System Identity
 
-Project Aegis is designed to demonstrate practical experience in:
+| Field | Value |
+|---|---|
+| System name | Project Aegis Security Lab |
+| System identifier | PASL |
+| System type | General-support cybersecurity training and testing environment |
+| Hosting platform | Privately owned Proxmox VE homelab |
+| Information permitted | Synthetic, public, and lab-generated information only |
+| Information prohibited | Classified information, CUI, customer data, production credentials, and employer information |
 
-* Proxmox virtualization
-* Linux and Windows administration
-* Network discovery and service enumeration
-* Vulnerability scanning and remediation
-* Security hardening
-* Active Directory administration and security
-* Network segmentation and firewall configuration
-* Centralized logging and SIEM administration
-* Detection engineering
-* Threat hunting
-* Incident investigation
-* Risk assessment
-* Security architecture
-* Technical and executive reporting
-* Git and GitHub documentation workflows
+### Mission
+
+The mission of Project Aegis is to provide a realistic, repeatable, and professionally documented environment for developing practical ISSO, ISSE, and security architecture skills.
 
 ---
 
-## Lab Hardware
+## Current Environment
 
-| Component         | Specification                |
-| ----------------- | ---------------------------- |
-| Platform          | ASUS TUF Gaming Laptop FX504 |
-| Processor         | Intel Core i7-8750H          |
-| CPU capacity      | 6 cores / 12 threads         |
-| Memory            | 16 GB DDR4                   |
-| Primary storage   | 256 GB PCIe SSD              |
-| Secondary storage | 1 TB HDD                     |
-| Graphics          | NVIDIA GeForce GTX 1060 6 GB |
-| Hypervisor        | Proxmox Virtual Environment  |
+| Component | Function | Status |
+|---|---|---|
+| Proxmox VE | Virtualization platform and system host | Operational |
+| Kali Linux | Security testing and administrative workstation | Operational |
+| Windows Server | Active Directory, DNS, DHCP, and administrative services | Planned |
+| Windows 11 | Domain-joined user workstation | Planned |
+| Ubuntu Server | Linux application or infrastructure server | Planned |
+| Nessus Essentials | Vulnerability scanning | Planned |
+| Wazuh | Endpoint monitoring and security analytics | Planned |
+| Splunk | Centralized logging and analysis | Planned |
 
-Because memory is the primary resource constraint, virtual machines will be powered on only when required for the current lab activity.
-
----
-
-## Planned Lab Environment
-
-The completed environment will include:
-
-| System              | Purpose                                               |
-| ------------------- | ----------------------------------------------------- |
-| Proxmox VE          | Bare-metal virtualization platform                    |
-| Kali Linux          | Security testing and assessment workstation           |
-| Ubuntu Server       | Linux server and vulnerability target                 |
-| Windows Workstation | Windows administration, logging, and endpoint testing |
-| Windows Server      | Active Directory Domain Services                      |
-| pfSense             | Routing, firewalling, and network segmentation        |
-| Greenbone/OpenVAS   | Vulnerability scanning and management                 |
-| Wazuh               | SIEM, endpoint monitoring, and alerting               |
-| Sysmon              | Enhanced Windows security telemetry                   |
-| Azure or AWS        | Cloud security and identity labs                      |
+Existing Proxmox, Kali Linux, networking, storage, firewall, and Raspberry Pi documentation will be retained as technical evidence and migrated into the new RMF-centered structure.
 
 ---
 
-## Target Architecture
+## Governance Baseline
 
-```text
-                         Internet
-                            |
-                     Home Network
-                            |
-                     Proxmox Host
-                            |
-              +-------------+-------------+
-              |                           |
-       Management Network          Security Lab Network
-              |                           |
-         Proxmox GUI              pfSense Firewall
-                                          |
-                        +-----------------+-----------------+
-                        |                 |                 |
-                    Servers          Workstations       Monitoring
-                        |                 |                 |
-                 Ubuntu Server       Windows Client        Wazuh
-                 Windows Server      Kali Linux
-                 Active Directory
-```
+Project Aegis will primarily use:
 
-The architecture will evolve as networking, identity, monitoring, and segmentation are introduced.
+- NIST SP 800-37 Rev. 2 — Risk Management Framework
+- NIST SP 800-53 Rev. 5 — Security and Privacy Controls
+- NIST SP 800-53A Rev. 5 — Control Assessment Procedures
+- FIPS 199 — Security Categorization
+- FIPS 200 — Minimum Security Requirements
+- NIST SP 800-30 — Risk Assessment
+- NIST SP 800-34 — Contingency Planning
+- NIST SP 800-61 — Incident Handling
+- NIST SP 800-128 — Configuration Management
+- NIST SP 800-137 — Continuous Monitoring
+
+Additional implementation guidance may include DISA STIGs, CIS Benchmarks, MITRE ATT&CK, CISA guidance, and vendor documentation.
+
+This project simulates federal practices but does not claim formal compliance, certification, or authorization.
 
 ---
 
-## Project Roadmap
+## Project Roles
 
-### Milestone 1: Foundation
+Because this is a home lab, some roles are combined. This limitation will be documented and addressed through version control, evidence retention, separate user and administrator accounts, formal change records, and simulated independent assessment.
 
-* Document the Proxmox host
-* Configure storage
-* Understand virtual machines and containers
-* Configure basic virtual networking
-* Learn Git and Markdown workflows
-* Create asset and VM inventories
-
-### Milestone 2: Core Systems
-
-* Deploy Kali Linux
-* Deploy Ubuntu Server
-* Deploy a Windows workstation
-* Configure user accounts
-* Apply operating-system updates
-* Establish configuration baselines
-
-### Milestone 3: Vulnerability Management
-
-* Discover hosts with Nmap
-* Enumerate open ports and services
-* Deploy Greenbone/OpenVAS
-* Run baseline vulnerability scans
-* Review CVEs and CVSS scores
-* Prioritize findings by risk
-* Remediate selected vulnerabilities
-* Perform validation scans
-* Produce a final assessment report
-
-### Milestone 4: Enterprise Identity
-
-* Deploy Windows Server
-* Configure Active Directory Domain Services
-* Create organizational units, users, and groups
-* Join Windows systems to the domain
-* Configure Group Policy
-* Review identity and privilege risks
-* Harden the domain environment
-
-### Milestone 5: Security Monitoring
-
-* Deploy Wazuh
-* Install endpoint agents
-* Configure Sysmon
-* Collect Linux and Windows logs
-* Create dashboards
-* Investigate security alerts
-* Map activity to MITRE ATT&CK
-
-### Milestone 6: Network Security
-
-* Deploy pfSense
-* Create isolated network segments
-* Configure firewall policies
-* Review NAT, DHCP, and DNS
-* Restrict administrative access
-* Document network trust boundaries
-
-### Milestone 7: Detection and Threat Hunting
-
-* Simulate failed-login activity
-* Generate safe PowerShell telemetry
-* Detect suspicious process execution
-* Investigate persistence techniques
-* Write basic detection rules
-* Conduct structured threat hunts
-* Produce incident reports
-
-### Milestone 8: Cloud Security
-
-* Configure a small Azure or AWS environment
-* Review identity and access management
-* Configure secure administrative access
-* Enable logging and monitoring
-* Review storage permissions
-* Document a cloud security architecture
-
-### Milestone 9: Enterprise Capstone
-
-* Integrate identity, networking, monitoring, and vulnerability management
-* Conduct a full security assessment
-* Generate and investigate security events
-* Remediate identified weaknesses
-* Validate implemented controls
-* Produce technical and executive reports
+| Role | Assignment |
+|---|---|
+| System Owner | Javier Delgado |
+| Information System Security Officer | Javier Delgado |
+| System Administrator | Javier Delgado |
+| Network Administrator | Javier Delgado |
+| Information System Security Manager | Simulated mentor role |
+| Security Control Assessor | Simulated independent auditor role |
+| Authorizing Official | Simulated executive role |
 
 ---
 
-## Repository Structure
+## Project Phases
+
+1. **System Understanding** — system description, asset inventory, network diagram, authorization boundary, and data-flow diagram.
+2. **Security Documentation** — System Security Plan, roles, hardware and software inventories, categorization, and data classification.
+3. **Risk Management** — risk assessment, risk register, threat assessment, and Business Impact Analysis.
+4. **Security Controls** — implement, document, and map technical and administrative controls to NIST SP 800-53.
+5. **Vulnerability Management** — scan, validate, prioritize, remediate, verify, and track findings through POA&Ms.
+6. **Continuous Monitoring** — establish recurring reviews, metrics, reporting, and ongoing control awareness.
+7. **Incident Response** — conduct tabletop and technical exercises and document outcomes.
+8. **Change Management** — require security-impact analysis, testing, rollback, approval, and validation for major changes.
+9. **Mock Audit** — perform an independent-style assessment and correct deficiencies.
+10. **Mock Authorization** — prepare residual-risk reporting and a simulated authorization decision.
+
+See [`ROADMAP.md`](ROADMAP.md) for the detailed project sequence.
+
+---
+
+## Repository Organization
 
 ```text
 project-aegis/
-|
-|-- README.md
-|-- CHANGELOG.md
-|-- LICENSE
-|-- .gitignore
-|
-|-- docs/
-|   |-- 00-introduction/
-|   |-- 01-proxmox/
-|   |-- 02-linux/
-|   |-- 03-networking/
-|   |-- 04-kali/
-|   |-- 05-ubuntu/
-|   |-- 06-windows/
-|   |-- 07-vulnerability-management/
-|   |-- 08-active-directory/
-|   |-- 09-pfsense/
-|   |-- 10-wazuh/
-|   |-- 11-threat-hunting/
-|   |-- 12-cloud-security/
-|   `-- 13-capstone/
-|
-|-- diagrams/
-|-- screenshots/
-|-- reports/
-|-- templates/
-|-- scripts/
-|-- scan-results/
-|-- configs/
-|-- assets/
-|-- notes/
-`-- resume/
+├── README.md
+├── ROADMAP.md
+├── CHANGELOG.md
+├── MIGRATION.md
+├── LICENSE
+├── docs/
+│   ├── 00-project-governance/
+│   ├── 01-system-understanding/
+│   ├── 02-security-documentation/
+│   ├── 03-risk-management/
+│   ├── 04-security-controls/
+│   ├── 05-vulnerability-management/
+│   ├── 06-continuous-monitoring/
+│   ├── 07-incident-response/
+│   ├── 08-change-management/
+│   ├── 09-mock-audit/
+│   ├── 10-authorization/
+│   └── 90-technical-evidence/
+├── diagrams/
+├── evidence/
+├── templates/
+└── scripts/
 ```
 
----
-
-## Documentation Standards
-
-Each major lab phase should include:
-
-1. **Purpose**
-   What problem the technology or configuration addresses.
-
-2. **Learning objectives**
-   What knowledge or skills should be gained.
-
-3. **Environment details**
-   Systems, resources, network information, and dependencies.
-
-4. **Implementation steps**
-   Commands, configuration changes, and screenshots.
-
-5. **Security considerations**
-   Risks, trust boundaries, access requirements, and controls.
-
-6. **Validation**
-   Evidence that the system or control works as intended.
-
-7. **Troubleshooting**
-   Problems encountered and how they were resolved.
-
-8. **Lessons learned**
-   Technical and process improvements identified during the lab.
-
-9. **Portfolio deliverables**
-   Reports, diagrams, scripts, and sanitized results.
+The structure will be implemented incrementally. Existing technical material will not be deleted merely because it predates the ISSO transition.
 
 ---
 
-## Git Workflow
+## Documentation Standard
 
-Changes are documented using focused commits with clear messages.
+Major documents should include, when applicable:
 
-Examples:
+1. Objective
+2. Scope
+3. Roles and responsibilities
+4. Assumptions
+5. Procedures or methodology
+6. Findings
+7. Risk discussion
+8. Recommendations
+9. Evidence
+10. Lessons learned
+11. Revision history
 
-```text
-docs: add Proxmox host inventory
-feat: deploy Ubuntu target server
-config: document SSH hardening baseline
-scan: add initial Nmap results
-report: add vulnerability assessment summary
-fix: correct virtual network configuration
-```
-
-Standard workflow:
-
-```bash
-git status
-git add .
-git commit -m "Describe the completed change"
-git push
-```
+Security claims must be supported by reproducible and sanitized evidence such as command output, configuration exports, logs, scan reports, diagrams, test results, and change records.
 
 ---
 
-## Security and Privacy
+## Security and Privacy Rules
 
-This repository must not contain:
+This public repository must not contain:
 
-* Real passwords
-* API keys
-* Private keys
-* Authentication tokens
-* Sensitive personal information
-* Public IP addresses
-* Internal employer information
-* Proprietary configurations
-* Unredacted vulnerability reports containing sensitive data
+- Passwords, tokens, private keys, or secrets
+- Classified information or Controlled Unclassified Information
+- Employer or customer information
+- Production credentials or production configurations
+- Sensitive personally identifiable information
+- Unredacted vulnerability reports
+- Unnecessary public IP addresses, internal names, or device identifiers
 
-Configuration files and scan results will be sanitized before being committed.
-
-Intentionally vulnerable systems will be used only in an authorized lab environment. They should not be exposed directly to the internet or used against systems without explicit permission.
+All identities, records, and business data used in the lab will be fictional or synthetic.
 
 ---
 
-## Portfolio Deliverables
+## Professional Development Goals
 
-The project will eventually include:
+Project Aegis supports preparation for roles including:
 
-* Network and architecture diagrams
-* Asset inventories
-* Vulnerability assessment reports
-* Remediation plans
-* Before-and-after security comparisons
-* Security configuration baselines
-* Architecture Decision Records
-* Change records
-* Runbooks
-* Incident investigation reports
-* Detection rules
-* Threat-hunting reports
-* Executive summaries
-* Resume bullets
-* Interview stories
+- Information System Security Officer
+- Information Systems Security Engineer
+- Infrastructure Security Engineer
+- Security Control Assessor
+- Security Engineer
+- Security Architect
 
----
+It also supports preparation for CompTIA Security+, ISC2 SSCP, ISC2 CGRC, and eventually CISSP.
 
-## Skills Demonstrated
-
-Project Aegis is intended to provide evidence of:
-
-* Secure infrastructure design
-* Systems engineering
-* Vulnerability management
-* Risk-based prioritization
-* Security control implementation
-* Technical troubleshooting
-* Log analysis
-* Security monitoring
-* Identity and access management
-* Network security
-* Technical writing
-* Executive communication
-* Git-based documentation
-* Continuous improvement
+The project demonstrates preparation and practical capability. It does not represent employment experience or an official government authorization.
 
 ---
 
 ## Disclaimer
 
-Project Aegis is an educational cybersecurity lab. All testing is performed on systems owned by the project author or explicitly authorized for testing.
+Project Aegis Security Lab is an independent educational homelab. It is not a U.S. Government or Department of Defense information system, an official security assessment, a production system, or a formally authorized environment.
 
-The tools, techniques, and configurations documented here must not be used against systems without permission.
-
----
-
-## License
-
-This project is licensed under the MIT License unless otherwise noted.
+All testing is limited to systems owned by the project author or explicitly authorized for testing.
