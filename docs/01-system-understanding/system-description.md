@@ -5,7 +5,7 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.1 |
+| Version | 0.2 |
 | Status | Draft |
 | Date | 2026-07-25 |
 | Authorization Status | Not Authorized — System Definition in Progress |
@@ -71,8 +71,21 @@ Memory is the primary resource constraint. Virtual machines and security platfor
 | Proxmox VE Host | Virtualization platform and system management | Operational |
 | Kali Linux VM | Security administration and authorized testing workstation | Operational |
 | Proxmox Linux Bridge `vmbr0` | Current virtual network connectivity | Operational |
-| Secondary HDD Storage | ISO, backup, archive, and supporting storage | Operational; documentation requires validation |
+| Secondary HDD Storage | ISO, backup, archive, and supporting storage | Operational status requires validation |
 | GitHub Repository | Public portfolio documentation and version control | Operational |
+
+### 5.1 Kali Linux Configuration
+
+| Field | Value |
+|---|---|
+| VM ID | `100` |
+| Hostname | `aegis-lab-kali-01` |
+| Assigned Memory | 4 GB |
+| Virtual Disk | 40 GB |
+| Network Bridge | `vmbr0` |
+| IP Assignment | DHCP |
+| Primary Role | Security administration and authorized testing workstation |
+| Current Status | Operational |
 
 ## 6. Planned System Components
 
@@ -95,7 +108,7 @@ Planned components are not part of the active system until they are deployed, do
 
 The current system uses a bridged network configuration.
 
-The Proxmox host and connected virtual machines use the Linux bridge `vmbr0`, which connects to the trusted home network through the physical Ethernet interface.
+The Proxmox host and Kali Linux VM use the Linux bridge `vmbr0`, which connects to the trusted home network through the physical Ethernet interface. Kali receives its current IP configuration through DHCP from the home router.
 
 Current characteristics include:
 
@@ -234,13 +247,14 @@ Compensating practices include:
 The following items must be verified before this document can be approved:
 
 - [ ] Confirm the exact operational status of the secondary HDD storage.
-- [ ] Confirm Kali Linux's current VM ID, assigned RAM, disk size, and network bridge.
-- [ ] Confirm whether the Kali VM uses DHCP or a reserved/static address.
+- [x] Confirm Kali Linux's current VM ID, assigned RAM, disk size, and network bridge.
+- [x] Confirm whether the Kali VM uses DHCP or a reserved/static address.
 - [ ] Confirm whether any services other than Proxmox and Kali Linux are currently active.
-- [ ] Resolve stale `Planned` entries in the existing virtual-machine inventory.
+- [x] Resolve the Kali Linux stale `Planned` entry in the existing virtual-machine inventory.
 
 ## 16. Revision History
 
 | Version | Date | Author | Change Summary | Status |
 |---|---|---|---|---|
 | 0.1 | 2026-07-25 | Javier Delgado | Initial system-description draft | Draft |
+| 0.2 | 2026-07-25 | Javier Delgado | Validated Kali VM resources, network bridge, DHCP assignment, and operational status | Draft |
