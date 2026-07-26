@@ -5,7 +5,7 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.6 |
+| Version | 0.7 |
 | Status | In Progress |
 | Date | 2026-07-26 |
 | Authorization Status | Not Authorized — System Definition in Progress |
@@ -44,9 +44,13 @@ The public inventory must not contain passwords, tokens, private keys, public IP
 | `PASL-STO-002` | Secondary storage | Toshiba MQ04ABF100 / `aegis-hdd` | Directory storage for ISO files, backups, templates, archives, and supporting project data | `/dev/sda2` mounted at `/mnt/pve/aegis-hdd` | Available through Proxmox storage services | Operational | Validated — 931.5 GiB SATA device and active Proxmox storage confirmed |
 | `PASL-NET-001` | Physical network interface | `nic0` | Physical Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001` | Member of `vmbr0`; connected to the trusted home network | Operational | Validated — interface up and forwarding through `vmbr0` on 2026-07-26 |
 | `PASL-NET-002` | Virtual network bridge | `vmbr0` | Linux bridge providing current Proxmox management, default-route, and VM connectivity | Configured on `PASL-HW-001` | Home-network bridged connection | Operational | Validated — bridge up, `nic0` attached, and default route present on 2026-07-26 |
-| `PASL-VM-001` | Virtual machine | `aegis-lab-kali-01` | Kali Linux security administration and authorized testing workstation | Proxmox VM ID `100` on `PASL-HW-001` | VirtIO adapter on `vmbr0`; DHCP; Proxmox firewall enabled | Operational | Validated — CPU, memory, disk, network, guest agent, boot media, and snapshot state confirmed on 2026-07-26 |
+| `PASL-VM-001` | Virtual machine | `aegis-lab-kali-01` | Kali Linux security administration and authorized testing workstation | Proxmox VM ID `100` on `PASL-HW-001` | VirtIO adapter on `vmbr0`; DHCP; Proxmox firewall enabled | Operational | Validated — CPU, memory, disk, network, guest agent, boot media, snapshot, operating system, services, and listener state confirmed on 2026-07-26 |
 | `PASL-SW-001` | Hypervisor platform | Proxmox Virtual Environment | Provides virtualization, virtual networking, storage integration, snapshots, administrative management, scheduling, console access, and host firewall services | Installed on `PASL-HW-001` | Management services available through `vmbr0` | Operational | Validated — Proxmox 9.1.1 platform, core services, package versions, listening ports, and bind scopes recorded on 2026-07-26 |
-| `PASL-SW-002` | Remote administration service | OpenSSH Server | Provides command-line remote administration of the Proxmox host | Installed on `PASL-HW-001` | TCP port 22; wildcard listener on all host interfaces | Operational | Validated — service active; package version `1:10.0p1-7`; access restrictions require later control assessment |
+| `PASL-SW-002` | Remote administration service | OpenSSH Server — Proxmox host | Provides command-line remote administration of the Proxmox host | Installed on `PASL-HW-001` | TCP port 22; wildcard listener on all host interfaces | Operational | Validated — service active; package version `1:10.0p1-7`; access restrictions require later control assessment |
+| `PASL-SW-003` | Guest operating system | Kali GNU/Linux Rolling | Operating system for the Project Aegis security administration and testing workstation | Installed in `PASL-VM-001` | Uses the VM network association | Operational | Validated — hostname and kernel `7.0.12+kali-amd64` confirmed on 2026-07-26 |
+| `PASL-SW-004` | Guest integration service | QEMU Guest Agent | Supports Proxmox guest-state reporting and management integration | Installed in `PASL-VM-001` | Local hypervisor-to-guest integration | Operational | Validated — service active; package version `1:11.0.1+ds-1` |
+| `PASL-SW-005` | Remote administration service | OpenSSH Server — Kali VM | Provides optional remote shell access to Kali when enabled | Installed in `PASL-VM-001` | No listener observed at validation | Installed — service inactive | Validated — package version `1:10.3p1-5`; service inactive; no TCP port 22 listener |
+| `PASL-SW-006` | Security assessment tool | Nmap | Authorized network discovery and assessment tool | Installed in `PASL-VM-001` | Initiates authorized outbound assessment traffic when used | Operational | Validated — package version `7.99+dfsg-1kali1` |
 | `PASL-INF-001` | Information asset | Project documentation and evidence | System documentation, diagrams, configuration records, findings, screenshots, and assessment evidence | GitHub repository and approved local working copies | External hosted repository | Operational | Version controlled; public-content sanitization required |
 
 ## 5. Validated Host Configuration
@@ -166,7 +170,46 @@ The wildcard listeners on SSH, SPICE, and the Proxmox web interface are administ
 
 The active state of `pve-firewall` confirms that the service is running, but it does not by itself confirm that firewall enforcement or a protective ruleset is enabled. Firewall policy state remains a separate security-baseline item.
 
-## 10. External Supporting Dependencies
+## 10. Validated Kali Software and Services
+
+### 10.1 System Identity
+
+| Field | Current Value |
+|---|---|
+| Hostname | `aegis-lab-kali-01` |
+| Operating system | Kali GNU/Linux Rolling |
+| Kernel | `7.0.12+kali-amd64` |
+
+### 10.2 Security-Relevant Service Status
+
+| Service | Purpose | Status |
+|---|---|---|
+| `qemu-guest-agent` | Proxmox guest integration | Active |
+| `NetworkManager` | Network configuration and connectivity | Active |
+| `ssh` | Remote shell service | Inactive |
+| `cron` | Scheduled task execution | Active |
+| `rsyslog` | Traditional system logging | Not installed |
+| `auditd` | Linux auditing | Not installed |
+| `ufw` | Host firewall management | No service unit installed |
+| `firewalld` | Dynamic host firewall management | Not installed |
+
+### 10.3 Validated Package Versions
+
+| Package | Version |
+|---|---|
+| `qemu-guest-agent` | `1:11.0.1+ds-1` |
+| `openssh-server` | `1:10.3p1-5` |
+| `nmap` | `7.99+dfsg-1kali1` |
+
+The package query returned an incomplete `ufw` entry without a validated version. UFW is therefore not treated as a validated installed package or active service in this inventory.
+
+### 10.4 Listening-Service Baseline
+
+The sanitized validation returned no listening TCP or UDP services. The installed OpenSSH Server package was not exposing TCP port 22 because the `ssh` service was inactive.
+
+The lack of guest-level listeners reduces the Kali VM inbound attack surface at the time of validation. The absence of `auditd`, `rsyslog`, and an active guest firewall service will be evaluated during later audit, logging, and system-boundary control implementation.
+
+## 11. External Supporting Dependencies
 
 These items support Project Aegis but are not managed as internal Project Aegis assets.
 
@@ -178,11 +221,11 @@ These items support Project Aegis but are not managed as internal Project Aegis 
 | Vendor update repositories | Operating-system and application updates | No | External software-supply dependency |
 | Proxmox repositories | Hypervisor packages and updates | No | External software-supply dependency |
 
-## 11. Planned Assets
+## 12. Planned Assets
 
 Planned systems are tracked in project planning documents but are excluded from the active asset inventory until they are deployed and validated. These include Windows Server, Windows 11, Ubuntu Server, vulnerability-scanning services, centralized monitoring platforms, and a dedicated firewall or routing platform.
 
-## 12. Inventory Maintenance Requirements
+## 13. Inventory Maintenance Requirements
 
 Update this inventory when:
 
@@ -193,7 +236,7 @@ Update this inventory when:
 - A vulnerability, incident, or configuration review identifies an undocumented asset.
 - The authorization boundary or inventory standard changes.
 
-## 13. Current Validation Tasks
+## 14. Current Validation Tasks
 
 - [x] Validate the current Proxmox hostname, version, kernel, processor, and memory.
 - [x] Validate physical disk models, capacities, and device assignments without publishing serial numbers.
@@ -201,11 +244,11 @@ Update this inventory when:
 - [x] Validate the complete configuration of VM ID `100`.
 - [x] Validate active managed software services on the Proxmox host.
 - [x] Classify Proxmox listener bind scopes without publishing local IP addresses.
-- [ ] Validate active managed software and listening services inside the Kali VM.
+- [x] Validate active managed software and listening services inside the Kali VM.
 - [ ] Reconcile stale host-inventory statements and the unused `nic1` configuration entry with the validated active configuration.
 - [ ] Review and approve the active asset list.
 
-## 14. Related Documentation
+## 15. Related Documentation
 
 - [`System Description`](system-description.md)
 - [`Phase 1 README`](README.md)
@@ -217,8 +260,9 @@ Update this inventory when:
 - [`Proxmox Network Interface Validation`](evidence/proxmox-network-interface-validation.md)
 - [`Kali VM Configuration Validation`](evidence/kali-vm-configuration-validation.md)
 - [`Proxmox Host Service Validation`](evidence/proxmox-host-service-validation.md)
+- [`Kali Service Validation`](evidence/kali-service-validation.md)
 
-## 15. Revision History
+## 16. Revision History
 
 | Version | Date | Author | Change Summary | Status |
 |---|---|---|---|---|
@@ -228,3 +272,4 @@ Update this inventory when:
 | 0.4 | 2026-07-26 | Javier Delgado | Validated the complete VM ID `100` compute, storage, network, guest-agent, boot-media, and snapshot configuration | In Progress |
 | 0.5 | 2026-07-26 | Javier Delgado | Validated Proxmox core services, software package versions, OpenSSH, and the sanitized host listening-port baseline | In Progress |
 | 0.6 | 2026-07-26 | Javier Delgado | Classified Proxmox listener bind scopes and identified wildcard administrative and RPC attack-surface items | In Progress |
+| 0.7 | 2026-07-26 | Javier Delgado | Validated Kali system identity, security-relevant service state, selected package versions, and the absence of listening TCP or UDP services | In Progress |
