@@ -5,7 +5,7 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.7 |
+| Version | 0.8 |
 | Status | In Progress |
 | Date | 2026-07-26 |
 | Authorization Status | Not Authorized — System Definition in Progress |
@@ -39,10 +39,10 @@ The public inventory must not contain passwords, tokens, private keys, public IP
 
 | Asset ID | Category | Asset Name | Description and Role | Location or Host | Network Association | Operational Status | Validation Status |
 |---|---|---|---|---|---|---|---|
-| `PASL-HW-001` | Physical host | Proxmox virtualization host | ASUS TUF Gaming Laptop FX504 used as the bare-metal platform for Project Aegis virtual machines, virtual networking, and storage services | Privately controlled physical location | Management through `vmbr0` | Operational | Validated — hostname, operating platform, processor, memory, and disks confirmed on 2026-07-26 |
+| `PASL-HW-001` | Physical host | Proxmox virtualization host | ASUS TUF Gaming Laptop FX504 used as the bare-metal platform for Project Aegis virtual machines, virtual networking, and storage services | Privately controlled physical location | Management through `vmbr0` | Operational | Validated — hostname, operating platform, processor, memory, disks, and network controllers confirmed on 2026-07-26 |
 | `PASL-STO-001` | Primary storage | Kingston RBUSNS8154P3256GJ NVMe SSD | Hosts Proxmox system files, LVM storage, and active VM disks | `/dev/nvme0n1` in `PASL-HW-001` | Not directly networked | Operational | Validated — 238.5 GiB NVMe device confirmed on 2026-07-26 |
 | `PASL-STO-002` | Secondary storage | Toshiba MQ04ABF100 / `aegis-hdd` | Directory storage for ISO files, backups, templates, archives, and supporting project data | `/dev/sda2` mounted at `/mnt/pve/aegis-hdd` | Available through Proxmox storage services | Operational | Validated — 931.5 GiB SATA device and active Proxmox storage confirmed |
-| `PASL-NET-001` | Physical network interface | `nic0` | Physical Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001` | Member of `vmbr0`; connected to the trusted home network | Operational | Validated — interface up and forwarding through `vmbr0` on 2026-07-26 |
+| `PASL-NET-001` | Physical network interface | `nic0` | Physical Realtek Gigabit Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001`; driver `r8169` | Member of `vmbr0`; connected to the trusted home network | Operational | Validated — interface up, forwarding through `vmbr0`, and mapped to the Realtek wired controller on 2026-07-26 |
 | `PASL-NET-002` | Virtual network bridge | `vmbr0` | Linux bridge providing current Proxmox management, default-route, and VM connectivity | Configured on `PASL-HW-001` | Home-network bridged connection | Operational | Validated — bridge up, `nic0` attached, and default route present on 2026-07-26 |
 | `PASL-VM-001` | Virtual machine | `aegis-lab-kali-01` | Kali Linux security administration and authorized testing workstation | Proxmox VM ID `100` on `PASL-HW-001` | VirtIO adapter on `vmbr0`; DHCP; Proxmox firewall enabled | Operational | Validated — CPU, memory, disk, network, guest agent, boot media, snapshot, operating system, services, and listener state confirmed on 2026-07-26 |
 | `PASL-SW-001` | Hypervisor platform | Proxmox Virtual Environment | Provides virtualization, virtual networking, storage integration, snapshots, administrative management, scheduling, console access, and host firewall services | Installed on `PASL-HW-001` | Management services available through `vmbr0` | Operational | Validated — Proxmox 9.1.1 platform, core services, package versions, listening ports, and bind scopes recorded on 2026-07-26 |
@@ -80,17 +80,21 @@ Point-in-time memory utilization is retained in the supporting evidence but is n
 |---|---|
 | Physical Ethernet asset | `PASL-NET-001` — `nic0` |
 | Physical interface state | Up |
+| Wired controller | Realtek RTL8111/8168-family Gigabit Ethernet controller |
+| Wired driver | `r8169` |
 | Primary bridge asset | `PASL-NET-002` — `vmbr0` |
 | Bridge state | Up |
 | Physical bridge membership | `nic0` attached to `vmbr0` |
 | Proxmox management addressing | Static configuration on `vmbr0`; address sanitized from public evidence |
 | Default route | Through `vmbr0`; gateway sanitized from public evidence |
-| Wireless interface | `wlo1` exists but is down and not used by Project Aegis |
+| Wireless interface | `wlo1`; Intel Wireless-AC 9560 using `iwlwifi`; down and not used by Project Aegis |
 | VM ID `100` runtime path | `tap100i0` → `fwbr100i0` → firewall link pair → `vmbr0` |
 
 The VM-specific interfaces `tap100i0`, `fwbr100i0`, `fwpr100p0`, and `fwln100i0` are generated and maintained by Proxmox. They demonstrate an active firewall bridge path for VM ID `100`, but they are not assigned independent persistent asset identifiers.
 
-The persistent network configuration contains an `iface nic1 inet manual` entry, although no `nic1` interface appeared in the runtime interface list. This discrepancy will be reconciled during legacy host-inventory cleanup.
+The persistent configuration contains `iface nic1 inet manual`, but validation found no runtime `nic1`, no second wired network controller, and no driver-backed interface matching that name. The entry is classified as stale or unused and is excluded from the active asset inventory. It may be removed later through controlled configuration cleanup after a backup is created.
+
+The kernel control interface `bonding_masters` is not an active Project Aegis network asset.
 
 ## 7. Active Virtual Guest Summary
 
@@ -245,7 +249,8 @@ Update this inventory when:
 - [x] Validate active managed software services on the Proxmox host.
 - [x] Classify Proxmox listener bind scopes without publishing local IP addresses.
 - [x] Validate active managed software and listening services inside the Kali VM.
-- [ ] Reconcile stale host-inventory statements and the unused `nic1` configuration entry with the validated active configuration.
+- [x] Reconcile the unused `nic1` entry with runtime interfaces and physical network controllers.
+- [ ] Reconcile stale legacy host-inventory statements with the validated active configuration.
 - [ ] Review and approve the active asset list.
 
 ## 15. Related Documentation
@@ -261,6 +266,7 @@ Update this inventory when:
 - [`Kali VM Configuration Validation`](evidence/kali-vm-configuration-validation.md)
 - [`Proxmox Host Service Validation`](evidence/proxmox-host-service-validation.md)
 - [`Kali Service Validation`](evidence/kali-service-validation.md)
+- [`Proxmox Network Controller Reconciliation`](evidence/proxmox-network-controller-reconciliation.md)
 
 ## 16. Revision History
 
@@ -273,3 +279,4 @@ Update this inventory when:
 | 0.5 | 2026-07-26 | Javier Delgado | Validated Proxmox core services, software package versions, OpenSSH, and the sanitized host listening-port baseline | In Progress |
 | 0.6 | 2026-07-26 | Javier Delgado | Classified Proxmox listener bind scopes and identified wildcard administrative and RPC attack-surface items | In Progress |
 | 0.7 | 2026-07-26 | Javier Delgado | Validated Kali system identity, security-relevant service state, selected package versions, and the absence of listening TCP or UDP services | In Progress |
+| 0.8 | 2026-07-26 | Javier Delgado | Reconciled persistent network configuration with runtime interfaces and hardware controllers; classified `nic1` as a stale or unused entry | In Progress |
