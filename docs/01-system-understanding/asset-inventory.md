@@ -5,7 +5,7 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.5 |
+| Version | 0.6 |
 | Status | In Progress |
 | Date | 2026-07-26 |
 | Authorization Status | Not Authorized — System Definition in Progress |
@@ -45,8 +45,8 @@ The public inventory must not contain passwords, tokens, private keys, public IP
 | `PASL-NET-001` | Physical network interface | `nic0` | Physical Ethernet connection supporting Proxmox management and bridged VM connectivity | Installed in `PASL-HW-001` | Member of `vmbr0`; connected to the trusted home network | Operational | Validated — interface up and forwarding through `vmbr0` on 2026-07-26 |
 | `PASL-NET-002` | Virtual network bridge | `vmbr0` | Linux bridge providing current Proxmox management, default-route, and VM connectivity | Configured on `PASL-HW-001` | Home-network bridged connection | Operational | Validated — bridge up, `nic0` attached, and default route present on 2026-07-26 |
 | `PASL-VM-001` | Virtual machine | `aegis-lab-kali-01` | Kali Linux security administration and authorized testing workstation | Proxmox VM ID `100` on `PASL-HW-001` | VirtIO adapter on `vmbr0`; DHCP; Proxmox firewall enabled | Operational | Validated — CPU, memory, disk, network, guest agent, boot media, and snapshot state confirmed on 2026-07-26 |
-| `PASL-SW-001` | Hypervisor platform | Proxmox Virtual Environment | Provides virtualization, virtual networking, storage integration, snapshots, administrative management, scheduling, console access, and host firewall services | Installed on `PASL-HW-001` | Management services available through `vmbr0` | Operational | Validated — Proxmox 9.1.1 platform, core services, package versions, and listening ports recorded on 2026-07-26 |
-| `PASL-SW-002` | Remote administration service | OpenSSH Server | Provides command-line remote administration of the Proxmox host | Installed on `PASL-HW-001` | TCP port 22; exact bind address withheld from public evidence | Operational | Validated — service active; package version `1:10.0p1-7`; bind-scope classification pending |
+| `PASL-SW-001` | Hypervisor platform | Proxmox Virtual Environment | Provides virtualization, virtual networking, storage integration, snapshots, administrative management, scheduling, console access, and host firewall services | Installed on `PASL-HW-001` | Management services available through `vmbr0` | Operational | Validated — Proxmox 9.1.1 platform, core services, package versions, listening ports, and bind scopes recorded on 2026-07-26 |
+| `PASL-SW-002` | Remote administration service | OpenSSH Server | Provides command-line remote administration of the Proxmox host | Installed on `PASL-HW-001` | TCP port 22; wildcard listener on all host interfaces | Operational | Validated — service active; package version `1:10.0p1-7`; access restrictions require later control assessment |
 | `PASL-INF-001` | Information asset | Project documentation and evidence | System documentation, diagrams, configuration records, findings, screenshots, and assessment evidence | GitHub repository and approved local working copies | External hosted repository | Operational | Version controlled; public-content sanitization required |
 
 ## 5. Validated Host Configuration
@@ -147,18 +147,22 @@ Additional running Proxmox services include `pve-ha-crm`, `pve-ha-lrm`, `pve-lxc
 | `pve-firewall` | `6.0.4` |
 | `openssh-server` | `1:10.0p1-7` |
 
-### 9.3 Sanitized Listening-Port Baseline
+### 9.3 Sanitized Listening-Port and Bind-Scope Baseline
 
-| Protocol | Port | Service or Process | Preliminary Purpose | Validation Note |
+| Protocol | Port | Service or Process | Preliminary Purpose | Validated Bind Scope |
 |---|---:|---|---|---|
-| TCP | 22 | `sshd` | SSH administration | Exact bind scope pending sanitized classification |
-| TCP | 25 | Postfix `master` | Local mail and system notifications | Exact bind scope pending sanitized classification |
-| TCP | 85 | `pvedaemon` | Proxmox API daemon communication | Exact bind scope pending sanitized classification |
-| TCP | 111 | `rpcbind` | RPC service mapping | Exact bind scope pending sanitized classification |
-| TCP | 3128 | `spiceproxy` | SPICE console proxy | Wildcard listener observed |
-| TCP | 8006 | `pveproxy` | Proxmox web-management interface | Wildcard listener observed |
-| UDP | 111 | `rpcbind` | RPC service mapping | Exact bind scope pending sanitized classification |
-| UDP | 323 | `chronyd` | Time-synchronization command interface | Exact bind scope pending sanitized classification |
+| TCP | 22 | `sshd` | SSH administration | Wildcard — all host interfaces |
+| TCP | 25 | Postfix `master` | Local mail and system notifications | Loopback only |
+| TCP | 85 | `pvedaemon` | Proxmox API daemon communication | Loopback only |
+| TCP | 111 | `rpcbind` | RPC service mapping | Wildcard — all host interfaces |
+| TCP | 3128 | `spiceproxy` | SPICE console proxy | Wildcard — all host interfaces |
+| TCP | 8006 | `pveproxy` | Proxmox web-management interface | Wildcard — all host interfaces |
+| UDP | 111 | `rpcbind` | RPC service mapping | Wildcard — all host interfaces |
+| UDP | 323 | `chronyd` | Time-synchronization command interface | Loopback only |
+
+A wildcard listener accepts traffic addressed to any active interface on the Proxmox host. It does not by itself prove internet exposure; actual reachability also depends on firewall rules, upstream router configuration, segmentation, and routing.
+
+The wildcard listeners on SSH, SPICE, and the Proxmox web interface are administrative attack-surface items that must remain limited to trusted systems or networks. The operational need for wildcard `rpcbind` on TCP and UDP port `111` should be reviewed. Postfix, `pvedaemon`, and the `chronyd` command interface are loopback-only.
 
 The active state of `pve-firewall` confirms that the service is running, but it does not by itself confirm that firewall enforcement or a protective ruleset is enabled. Firewall policy state remains a separate security-baseline item.
 
@@ -196,7 +200,7 @@ Update this inventory when:
 - [x] Validate active physical and virtual network interfaces.
 - [x] Validate the complete configuration of VM ID `100`.
 - [x] Validate active managed software services on the Proxmox host.
-- [ ] Classify Proxmox listener bind scopes without publishing local IP addresses.
+- [x] Classify Proxmox listener bind scopes without publishing local IP addresses.
 - [ ] Validate active managed software and listening services inside the Kali VM.
 - [ ] Reconcile stale host-inventory statements and the unused `nic1` configuration entry with the validated active configuration.
 - [ ] Review and approve the active asset list.
@@ -223,3 +227,4 @@ Update this inventory when:
 | 0.3 | 2026-07-26 | Javier Delgado | Validated `nic0`, `vmbr0`, the default-route path, the VM ID `100` firewall bridge path, and recorded the inactive wireless and unmatched `nic1` configuration | In Progress |
 | 0.4 | 2026-07-26 | Javier Delgado | Validated the complete VM ID `100` compute, storage, network, guest-agent, boot-media, and snapshot configuration | In Progress |
 | 0.5 | 2026-07-26 | Javier Delgado | Validated Proxmox core services, software package versions, OpenSSH, and the sanitized host listening-port baseline | In Progress |
+| 0.6 | 2026-07-26 | Javier Delgado | Classified Proxmox listener bind scopes and identified wildcard administrative and RPC attack-surface items | In Progress |
