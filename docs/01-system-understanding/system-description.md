@@ -5,7 +5,7 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.2 |
+| Version | 0.3 |
 | Status | Draft |
 | Date | 2026-07-25 |
 | Authorization Status | Not Authorized — System Definition in Progress |
@@ -71,7 +71,7 @@ Memory is the primary resource constraint. Virtual machines and security platfor
 | Proxmox VE Host | Virtualization platform and system management | Operational |
 | Kali Linux VM | Security administration and authorized testing workstation | Operational |
 | Proxmox Linux Bridge `vmbr0` | Current virtual network connectivity | Operational |
-| Secondary HDD Storage | ISO, backup, archive, and supporting storage | Operational status requires validation |
+| Secondary HDD Storage | ISO, backup, archive, and supporting storage | Operational |
 | GitHub Repository | Public portfolio documentation and version control | Operational |
 
 ### 5.1 Kali Linux Configuration
@@ -86,6 +86,23 @@ Memory is the primary resource constraint. Virtual machines and security platfor
 | IP Assignment | DHCP |
 | Primary Role | Security administration and authorized testing workstation |
 | Current Status | Operational |
+
+### 5.2 Secondary HDD Configuration
+
+| Field | Value |
+|---|---|
+| Proxmox Storage ID | `aegis-hdd` |
+| Storage Type | Directory storage |
+| Backing Device | `/dev/sda2` |
+| Filesystem | ext4 |
+| Mount Point | `/mnt/pve/aegis-hdd` |
+| Approximate Capacity | 931 GB |
+| Proxmox Status | Active |
+| Mount Status | Mounted read/write |
+| Utilization at Validation | Approximately 1.16% |
+| Intended Role | ISO files, backups, templates, archives, and supporting project data |
+
+The storage status was validated using `pvesm status`, `findmnt`, and `lsblk`. The results confirmed that Proxmox recognizes `aegis-hdd` as active and that `/dev/sda2` is mounted at `/mnt/pve/aegis-hdd` using the ext4 filesystem.
 
 ## 6. Planned System Components
 
@@ -246,7 +263,7 @@ Compensating practices include:
 
 The following items must be verified before this document can be approved:
 
-- [ ] Confirm the exact operational status of the secondary HDD storage.
+- [x] Confirm the exact operational status of the secondary HDD storage.
 - [x] Confirm Kali Linux's current VM ID, assigned RAM, disk size, and network bridge.
 - [x] Confirm whether the Kali VM uses DHCP or a reserved/static address.
 - [ ] Confirm whether any services other than Proxmox and Kali Linux are currently active.
@@ -258,3 +275,4 @@ The following items must be verified before this document can be approved:
 |---|---|---|---|---|
 | 0.1 | 2026-07-25 | Javier Delgado | Initial system-description draft | Draft |
 | 0.2 | 2026-07-25 | Javier Delgado | Validated Kali VM resources, network bridge, DHCP assignment, and operational status | Draft |
+| 0.3 | 2026-07-25 | Javier Delgado | Validated `aegis-hdd` storage status, mount point, filesystem, capacity, and operational role | Draft |
