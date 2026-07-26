@@ -5,8 +5,8 @@
 | System Name | Project Aegis Security Lab |
 | System Identifier | PASL |
 | Document Owner | Javier Delgado |
-| Version | 0.3 |
-| Status | Draft |
+| Version | 0.4 |
+| Status | Ready for Review |
 | Date | 2026-07-25 |
 | Authorization Status | Not Authorized — System Definition in Progress |
 
@@ -73,6 +73,8 @@ Memory is the primary resource constraint. Virtual machines and security platfor
 | Proxmox Linux Bridge `vmbr0` | Current virtual network connectivity | Operational |
 | Secondary HDD Storage | ISO, backup, archive, and supporting storage | Operational |
 | GitHub Repository | Public portfolio documentation and version control | Operational |
+
+Guest inventory validation using `qm list` and `pct list` confirmed that Kali Linux is the only deployed virtual machine and that no LXC containers are currently deployed.
 
 ### 5.1 Kali Linux Configuration
 
@@ -258,15 +260,15 @@ Compensating practices include:
 - [`Virtual Machine Inventory`](../01-proxmox/vm-inventory.md)
 - [`Current Network Architecture`](../01-proxmox/current-network-architecture.md)
 - [`Kali Linux System Baseline`](../02-linux/system-baseline.md)
+- [`Proxmox Guest Inventory Validation`](evidence/proxmox-guest-inventory-validation.md)
 
-## 15. Open Validation Items
-
-The following items must be verified before this document can be approved:
+## 15. Validation Checklist
 
 - [x] Confirm the exact operational status of the secondary HDD storage.
 - [x] Confirm Kali Linux's current VM ID, assigned RAM, disk size, and network bridge.
 - [x] Confirm whether the Kali VM uses DHCP or a reserved/static address.
-- [ ] Confirm whether any services other than Proxmox and Kali Linux are currently active.
+- [x] Confirm the complete active QEMU virtual-machine inventory.
+- [x] Confirm the complete active LXC-container inventory.
 - [x] Resolve the Kali Linux stale `Planned` entry in the existing virtual-machine inventory.
 
 ## 16. Revision History
@@ -276,3 +278,4 @@ The following items must be verified before this document can be approved:
 | 0.1 | 2026-07-25 | Javier Delgado | Initial system-description draft | Draft |
 | 0.2 | 2026-07-25 | Javier Delgado | Validated Kali VM resources, network bridge, DHCP assignment, and operational status | Draft |
 | 0.3 | 2026-07-25 | Javier Delgado | Validated `aegis-hdd` storage status, mount point, filesystem, capacity, and operational role | Draft |
+| 0.4 | 2026-07-25 | Javier Delgado | Confirmed one active QEMU VM, no LXC containers, and completed current guest inventory validation | Ready for Review |
